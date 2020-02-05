@@ -26,4 +26,4 @@ CALL save_request('panini', 3);
 CALL save_request('paneton', 6);
 
 CALL display_old_request();
-
+--DROP DATABASE IF EXISTS Pur_Beurre;

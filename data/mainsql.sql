@@ -1,7 +1,6 @@
---SOURCE C:/Users/SALGUES-BESNARD/Documents/GitHub/Projet_5_BDD_PythonMySQL/data/mainsql.sql;
 -- create database
-DROP DATABASE Pur_Beurre IF EXISTS;
-CREATE DATABASE Pur_Beurre CHARACTER SET 'utf8';
+DROP DATABASE IF EXISTS Pur_Beurre;
+CREATE DATABASE Pur_Beurre CHARACTER SET 'UTF8MB4';
 USE Pur_Beurre;
 
 -- create tables

@@ -3,12 +3,8 @@ import pymysql.cursors
 from python.db_creation import *
 from python.sql_requests import *
 
-#Ask for MySQL user's login and password.
-user_id = input("MySQL user = ")
-user_password = input("MySQL password = ")
 
-# Check DB pur_beurre exists. Create it if not.
-connection = pymysql.connect(host='localhost', user= user_id, password= user_password, db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 with connection.cursor() as cursor:
 	pur_butter_exist = ask_for_db(cursor)
 	if not pur_butter_exist:
@@ -20,7 +16,7 @@ with connection.cursor() as cursor:
 	
 	while not stop_session:
 		actions = input("Please select one option with the index's number. \n1= Research for a food substitute\
-		 \n2= See my old researches \nQ= Quitt session\n      Option = ")
+		 \n2= See my old researches Q= Quitt session\n      Option = ")
 
 		if actions == "1":
 			checkpoint = False
@@ -87,14 +83,15 @@ with connection.cursor() as cursor:
 					"\nSubstitute find:",element["substitute_name"],
 					"\nNutriscore:", element["nutriscore"],
 					"\nPurchasable in:",element["from_market"],
-					"\nMore informations on:", element["url_off"], "\n\n")
-			end_answer = input ("\n\nPress 'Q' to quitt or any key to return to the main menu\n >>>")
+					"\nMore informations on:", element["url_off"],
+					"\nDate of research", element["date_request"],"\n\n" )
+
+			end_answer = input ("Press 'Q' to quitt or any key to return to the main menu\n >>>")
 			if end_answer.lower() == "q":
 				stop_session = True
 		
 		elif actions.lower() == "q":
 			stop_session = True
-		
 		else:
 			print("Please enter 1 or 2 for answer.\n\n")
 

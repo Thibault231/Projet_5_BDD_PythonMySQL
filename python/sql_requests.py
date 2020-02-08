@@ -1,8 +1,12 @@
 #coding: utf-8
-import pymysql.cursors  
-
+import pymysql.cursors 
+import pickle
+import json
+import pprint
+import requests
+from .newfunc import *
 """
-Store functions for interracting with MySQL database through python's instructions.
+Stores functions for interracting with MySQL database through python's instructions.
 
 Contains functions:
 ask_for_db
@@ -15,19 +19,39 @@ save_request
 substitute_request
 """
 
+def api_extraction(categorie, cat_id):
+	r = requests.get(('https://fr.openfoodfacts.org/categorie/produits-tripiers/categorie/{}.json').format(categorie))
+	file = r.json()
+	food_list = []
+	
+	for element in file['products']:
+		if ('ingredients_text_fr' in element) and len(element['ingredients_text_fr'])>5 :
+			if 'nutriscore_grade' in element:
+				if 'stores' in element:
+					food_item = Food()
+					food_item.id = (element['_id']) 
+					food_item.name = (element['product_name'])
+					food_item.nutriscore = (element['nutriscore_grade'].upper())
+					food_item.cat = categorie
+					food_item.cat_id = cat_id
+					food_item.descriptions = (element['ingredients_text_fr'])
+					food_item.market = (element['stores'])
+					food_list.append(food_item)
+	return food_list
 
-def ask_for_db(cursor):
+def ask_for_db(cursor, db):
 	""" 
 	Check if database exist or not. 
 	Return True or False depending on the case.
-	Takes one argument: "cursor" for connection with Mysql.
+	Takes two argument: "cursor" for connection with Mysql.
+	"db" for database wanted
 	"""
 	sql = " SHOW DATABASES;"
 	cursor.execute(sql)
 	db_list = []
 	for row in cursor:
 		db_list.append(row.get("Database"))
-	if 'pur_beurre' in db_list:
+	if db in db_list:
 		return True
 	else:
 		return False
@@ -61,13 +85,14 @@ def cat_request(cursor):
 		cat_list.append(row.get("category"))
 	return cat_list
 
-def connect_db(cursor):
+def connect_db(cursor, db):
 	""" 
 	Focus MySQL on use of Pur_Beurre database.
 	Return True when done.
-	Takes one argument: "cursor" for connection with Mysql.
+	Takes two arguments: "cursor" for connection with Mysql.
+	"db" for database wanted
 	"""
-	sql ="USE Pur_Beurre;"
+	sql ="USE %s;"%db
 	cursor.execute(sql)
 	return True
 
@@ -88,15 +113,27 @@ def food_request(cursor, v_cat):
 		food_list.append((row.get("food_name"),row.get("id"), row.get("nutriscore") ))
 	return food_list
 
-def implement_request(cursor, connection, v_category, v_food_name, v_nutriscore, v_from_market, v_url_off):
-	"""
-	Insert a new row in the table "Main" using arguments.  
-	Takes three arguments: "cursor, connection" for connection with Mysql,
-	"v_category, v_food_name, v_nutriscore, v_from_market, v_url_off" for item to insert.
-	"""
-	sql="INSERT INTO Main (category, food_name, nutriscore, from_market, url_off) \
-    VALUES (%(cat)s, %(food)s, %(nutri)s, %(market)s, %(url)s);"
-	variables = {"cat":v_category, "food" :v_food_name, "nutri" : v_nutriscore, "market" : v_from_market,"url" : v_url_off } 
+def implement_cat(cursor, connection, v_cat):
+	sql="INSERT INTO Category (cat_name) VALUES (%s);"
+	sql1 = "SELECT id FROM Category WHERE cat_name = %s LIMIT 1;"
+	cursor.execute(sql, v_cat)
+	connection.commit()
+	cursor.execute(sql1, v_cat)
+	for row in cursor:
+		cat_id = row.get("id")
+	print(cat_id)
+	return cat_id
+
+def implement_food(cursor, connection, v_cat, v_food_name, v_nutriscore,v_descriptions,
+v_market, v_url_id):    
+	variables = {"v_cat":v_cat, "v_food_name":v_food_name, "v_nutriscore":v_nutriscore,
+	"v_descriptions":v_descriptions,"v_market":v_market, "v_url_id":v_url_id}
+
+	sql = "INSERT INTO Food (food_name, nutriscore, descriptions, from_market, url_id, fk_category_id)\
+	SELECT %(v_food_name)s, %(v_nutriscore)s, %(v_descriptions)s, %(v_market)s, %(v_url_id)s, Category.id  \
+	FROM Category \
+	WHERE Category.cat_name <=> %(v_cat)s\
+	LIMIT 1;"
 	cursor.execute(sql, variables)
 	connection.commit()
 	return True
@@ -142,6 +179,24 @@ def substitute_request(cursor, v_cat, v_nutri, v_id):
 		 'from_market':'none', 'url_off':'none'}
 	return substitute
 
+def db_implementation(cursor, connection, cat_list):
+	""" 
+	Implement Pur_Beurre data base with datas from Open Food Fact API.
+	Use a id_list for API's requests.
+	Takes three arguments: cursor, connection, id_list.
+	"""
+	for element in cat_list:
+		cat_id = implement_cat(cursor, connection, element)
+		food_list = api_extraction(element, cat_id)
+		for element in food_list:
+			implement_food(cursor, connection, element.cat, element.name, element.nutriscore,
+			element.descriptions, element.market, element.id)
+	return True
+
 
 if __name__ == "__main__":
-	pass
+	connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+	with connection.cursor() as cursor:
+		a = ask_for_db(cursor, 'pur_beurre')
+		print(a)
+	

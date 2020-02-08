@@ -3,121 +3,146 @@ import pymysql.cursors
 import pickle
 from python.db_creation import *
 from python.sql_requests import *
+from python.newfunc import *
 
-#create list of food items which have to be implemented
-fichier = open('datas.txt', 'rb')
-id_list = pickle.load(fichier)
-print(id_list, type(id_list))
+
+#create list and objects for the program.
+id_list = ['abats', 'popcorn']
+session = Checkpoint()
 
 # Check DB pur_beurre exists. Create it if not
 connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 with connection.cursor() as cursor:
-	pur_butter_exist = ask_for_db(cursor, 'pur_beurre')
-	if not pur_butter_exist:
-		db_creation(cursor, connection)
+	session.dtb_exist = ask_for_db(cursor, 'pur_beurre')
+	if not session.dtb_exist:
+		session.dtb_create = db_creation(cursor, connection)
 		db_implementation(cursor, connection, id_list)
-	link2db = connect_db(cursor, 'pur_beurre')
+	link2db = connect_db(cursor, 'pur_beurre')	
 
 	# program's main loop
-	stop_session = False
 	print("Welcome to Pur_Butter program")
-	while not stop_session:
-		actions = input("Please select one option with the index's number. \n1= Research for a food substitute\
-		 \n2= See my old researches Q= Quitt session\n      Option = ")
+	while session.main_loop:
+		actions = input("\n\nQuelle action souhaitez vous effectuer?\nTapez le numéro d'index de l'action.\n1= Rechercher un substitut pour un aliment\
+		 \n2= Voir mes substituts enregistrés.\n Q= Quitter le programme.\nChoix de l'action' n°= ")		
 		
 		# user start a research for a substitute
 		if actions == "1":
-			
+			food_item = Food()
+			subst_item = Substitute()
 			# select a category
-			checkpoint = False
-			while not checkpoint:
+			while not session.pick_cat:
 				cat_list = cat_request(cursor)
-				print("Select one of the follower food categories with its index's number\n")
-				print("index:  0","  for QUITT")
+				index_list = []
+				print("\nSelectionnez une des categories suivantes par son numero d'index\n")
+				print("index:  0","  pour QUITTER")
 				for index, element in enumerate(cat_list):
-					print("index: ", index+1,"  for category:  ", element)
-				cat_select = int(input ("Category selection = "))
-				if 1 <= cat_select < len(cat_list)+1 and len(cat_list)!=0:
-					v_cat = cat_list[cat_select - 1]
-					checkpoint = True
+					print("index: ", index+1,"  pour la categorie :  ", element[0].upper())
+					index_list.append(str(index+1))
+				cat_select = input ("Categorie selectionnee n°= ")
+				if cat_select == '0':
+					session.pick_cat = True
+					session.pick_food = True
+					session.select_subs = True
+					session.save = True
+					session.main_loop = False
+					pass
+				elif cat_select in index_list:
+					food_item.cat = cat_list[int(cat_select) - 1][0]
+					food_item.cat_id = cat_list[int(cat_select) - 1][1]
+					print(food_item.cat, food_item.cat_id)
+					session.pick_cat = True
 				else:
 					pass
 			
 			#select a food item
-			checkpoint = False
-			while not checkpoint:
-				food_list = food_request(cursor, v_cat)
-				print("\nPlease select one of the follower food item with its index's number\n")
-				print("index:  0","  for QUITT")
+			while not session.pick_food:
+				food_list = food_list_request(cursor, food_item.cat_id)
+				index_list = []
+				print("\nVeuillez selectionner un des aliments suivant avec son numero d'index.")
+				print("index:  0","  pour QUITTER")
 				for index, element in enumerate(food_list):
-					print("index: ", index+1,"  for item:  ", element[0])
-				food_select = int(input ("Food item selection = "))
-				if 1 <= food_select < len(food_list)+1 and len(food_list)!=0:
-					v_food = food_list[food_select-1]
-					checkpoint = True
+					print("index: ", index+1,"  pour l'aliment' :  ", element[0].upper())
+					index_list.append(str(index+1))
+				food_select = input ("Aliment selectionne n°= ")
+				if cat_select == '0':
+					session.pick_food = True
+					session.select_subs = True
+					session.save = True
+					session.main_loop = False
+					pass
+				elif food_select in index_list:
+					food_item = food_item_request(cursor, food_item.cat,food_item.cat_id)
+					session.pick_food = True
+					subst_item = substitute_request(cursor,food_item.cat, food_item.cat_id, food_item.id)
+					if food_item.nutriscore == subst_item.nutriscore:
+						print("\nDésolé mais nous n'avons trouver aucun substitut avec un meilleur nutriscore.\
+							\nA nutriscore équivalent nous vous proposons cependant le produit suivant.")
+					print("\nNom du substitut:  ", subst_item.name,
+						"\nCatégorie d'aliment: ", subst_item.cat,
+						"\nMagasin où l'acheter: ", subst_item.market,
+						"\nNutriscore: ", subst_item.nutriscore,
+						"\nDescription du produit: ", subst_item.descriptions,
+						"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(subst_item.url_id))
+						)
+					session.select_subs = True
 				else:
 					pass
-			
-			#pick an appropriate substitute in the database
-			v_nutri, v_id =v_food[2],v_food[1]
-			substitute = substitute_request(cursor, v_cat, v_nutri, v_id)
-			print ("Your food substitute is ", substitute['food_name'],\
-				"\nIts nutriscore is",substitute['nutriscore'], \
-				"\nYou can purchase it in", substitute['from_market'], \
-				"\nFor more informations on this substitute have a look to:\n",
-				substitute['url_off'], "\n")
 
 			# user choose to save or not in the datagase
-			checkpoint = False
-			while not checkpoint:
-				save_select = input ("Do you want to save this research? (Y/N) = ")
-				if save_select.lower() == "y":
-					v_substitute, v_id = v_food[1], substitute['id']
-					save_request(cursor, v_substitute, v_id)
-					print("Your last research have been saved.\n\n")
-					checkpoint = True
+			while not session.save:
+				save_select = input ("\nVoulez vous sauvegarder votre recherche et retourner au menu principal?\n (O= oui / N= non / Q= QUITTER) >>: ")
+				if save_select.lower() == "o":
+					print(subst_item.id, subst_item.cat_id,food_item.id)
+					session.save = save_request(cursor, connection, subst_item.id, subst_item.cat_id, food_item.name)
+					print("Votre recherche a bien été sauvegardée.")
 				elif save_select.lower() == "n":
-					print("You have quitt your last research without saving.\n\n")
-					checkpoint = True
+					print("\nRetour au menu principal. Votre recherche n'a pas été sauvegardée.\n\n")
+					session.save = True
+				elif save_select.lower() == "q":
+					session.main_loop = False
 				else:
-					print("Please select 'Y' or 'N'.")
-			
-			# user choose to quitt or return to the begin of the loop
-			end_answer = input ("Press 'Q' to quitt or any key to return to the main menu\n >>>")
-			if end_answer.lower() == "q":
-				stop_session = True
+					print("Veuillez selectionner 'O', 'N' ou 'Q'.")
 
 		# user want to see old research
 		elif actions == "2":
-			old_list = backup_request(cursor)
-			for element in old_list:
-				print("Research for: ",element["food_name"],
-					"\nSubstitute find:",element["substitute_name"],
-					"\nNutriscore:", element["nutriscore"],
-					"\nPurchasable in:",element["from_market"],
-					"\nMore informations on:", element["url_off"],
-					"\nDate of research", element["date_request"],"\n\n" )
+			history_list = history_request(cursor, 4)
+			for element in history_list:
+				print("\n\nDate de la recherche: ", element.date_request,
+						"\nNom de l'aliment: ", element.origin_name,
+						"\nNom du substitut:  ", element.name,
+						"\nCatégorie d'aliment: ", element.cat,
+						"\nMagasin où l'acheter: ", element.market,
+						"\nNutriscore: ", element.nutriscore,
+						"\nDescription du produit: ", element.descriptions,
+						"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
+						)
 
-			end_answer = input ("Press 'Q' to quitt or any key to return to the main menu\n >>>")
+			end_answer = input ("\nTapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
 			if end_answer.lower() == "q":
-				stop_session = True
+				session.main_loop = False
 		
-		# hidding command for implementing database with an O.F.F id.
+		# hidding command for interracting with the database.
 		elif actions == "3":
-			id_list = [input('Insert id of the food item you want to insert= ')]
-			impl_answ = db_implementation(cursor, connection, id_list)
-			print("\nFood item has been implemented in Pur_Beurre dtabase.\n")
+			sql_instructions = input("Entrez l'instruction sql avec un seul ';' >>: ")
+			session.hide_command = sql_command(cursor, connection, sql_instructions)
+			print("\nCommande exécutée")
 
-			end_answer = input ("Press 'Q' to quitt or any key to return to the main menu\n >>>")
+			end_answer = input ("Tapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
 			if end_answer.lower() == "q":
-				stop_session = True
+				session.main_loop = False
 
 		# user want to quitt the program
 		elif actions.lower() == "q":
-			stop_session = True
+			session.main_loop = False
 
 		#invalid input. Return to the beginning of the loop
 		else:
-			print("Please enter 1 or 2 for answer.\n\n")
+			print("Veuiller selectionner Q, 1 ou 2 comme coix d'action.")
+		
+		session.pick_cat = False 
+		session.pick_food = False 
+		session.select_subs = False 
+		session.save = False
+		session.hide_command = False
 
 connection.close()

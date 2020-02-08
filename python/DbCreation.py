@@ -31,11 +31,11 @@ def db_creation(cursor, connection):
 	
 	sql3 = "CREATE TABLE Food (\
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
-	food_name varchar(100) DEFAULT NULL,\
+	name VARCHAR(100) DEFAULT NULL,\
 	nutriscore CHAR(1) NOT NULL,\
 	descriptions TEXT DEFAULT NULL,\
-	from_market varchar(200) DEFAULT NULL,\
-	url_id varchar(20) DEFAULT NULL,\
+	market VARCHAR(200) DEFAULT NULL,\
+	url_id VARCHAR(20) DEFAULT NULL,\
 	fk_category_id INT UNSIGNED NOT NULL,\
 	PRIMARY KEY (id)\
 	) ENGINE=InnoDB;"
@@ -46,24 +46,24 @@ def db_creation(cursor, connection):
 	PRIMARY KEY (id)\
 	) ENGINE=InnoDB;"
 
-	sql5 = "CREATE TABLE SavedSubstitutes (\
+	sql5 = "CREATE TABLE History (\
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
-	substitute_id INT UNSIGNED NOT NULL,\
-	fk_food_id INT UNSIGNED NOT NULL,\
+	origin_name VARCHAR(100) NOT NULL,\
+	fk_subst_id INT UNSIGNED NOT NULL,\
 	fk_category_id INT UNSIGNED NOT NULL,\
 	date_request DATETIME DEFAULT NOW(),\
 	PRIMARY KEY (id)\
 	) ENGINE=InnoDB;"
 
 	sql6 = "CREATE INDEX index_cat_name_nutri\
-	ON Food (fk_category_id, nutriscore, food_name, id);"
+	ON Food (fk_category_id, nutriscore, name, id);"
 
-	sql7 = "ALTER TABLE SavedSubstitutes\
-	ADD FOREIGN KEY (fk_food_id) REFERENCES Food(id)\
+	sql7 = "ALTER TABLE History\
+	ADD FOREIGN KEY (fk_subst_id) REFERENCES Food(id)\
 	ON DELETE CASCADE   \
 	ON UPDATE CASCADE;"
 	
-	sql8 = "ALTER TABLE SavedSubstitutes\
+	sql8 = "ALTER TABLE History\
 	ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)\
 	ON DELETE CASCADE   \
 	ON UPDATE CASCADE;"
@@ -85,8 +85,3 @@ def db_creation(cursor, connection):
 	cursor.execute(sql9)
 	connection.commit()
 	return True
-
-
-
-if __name__ == "__main__":
-	pass

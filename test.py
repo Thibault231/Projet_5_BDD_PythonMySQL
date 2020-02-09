@@ -1,14 +1,17 @@
 #coding: utf-8
 import pymysql.cursors 
-import pickle
-from python.db_creation import *
-from python.sql_requests import *
-from python.newfunc import *
+from python.DbCreation import *
+from python.SqlRequests import *
+from python.Food import *
+from python.Substitute import *
+from python.Checkpoint import *
+from python.SessionLists import *
 
 
 #create list and objects for the program.
-id_list = ['abats', 'popcorn']
+session_list = SessionLists()
 session = Checkpoint()
+
 
 # Check DB pur_beurre exists. Create it if not
 connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
@@ -16,7 +19,7 @@ with connection.cursor() as cursor:
 	session.dtb_exist = ask_for_db(cursor, 'pur_beurre')
 	if not session.dtb_exist:
 		session.dtb_create = db_creation(cursor, connection)
-		db_implementation(cursor, connection, id_list)
+		db_implementation(cursor, connection, session_list.cat_impl)
 	link2db = connect_db(cursor, 'pur_beurre')	
 
 	# program's main loop
@@ -31,13 +34,12 @@ with connection.cursor() as cursor:
 			subst_item = Substitute()
 			# select a category
 			while not session.pick_cat:
-				cat_list = cat_request(cursor)
-				index_list = []
+				session_list.cat = cat_request(cursor)
 				print("\nSelectionnez une des categories suivantes par son numero d'index\n")
 				print("index:  0","  pour QUITTER")
-				for index, element in enumerate(cat_list):
+				for index, element in enumerate(session_list.cat):
 					print("index: ", index+1,"  pour la categorie :  ", element[0].upper())
-					index_list.append(str(index+1))
+					session_list.cat_index.append(str(index+1))
 				cat_select = input ("Categorie selectionnee n°= ")
 				if cat_select == '0':
 					session.pick_cat = True
@@ -46,9 +48,9 @@ with connection.cursor() as cursor:
 					session.save = True
 					session.main_loop = False
 					pass
-				elif cat_select in index_list:
-					food_item.cat = cat_list[int(cat_select) - 1][0]
-					food_item.cat_id = cat_list[int(cat_select) - 1][1]
+				elif cat_select in session_list.cat_index:
+					food_item.cat = session_list.cat[int(cat_select) - 1][0]
+					food_item.cat_id = session_list.cat[int(cat_select) - 1][1]
 					print(food_item.cat, food_item.cat_id)
 					session.pick_cat = True
 				else:
@@ -56,13 +58,12 @@ with connection.cursor() as cursor:
 			
 			#select a food item
 			while not session.pick_food:
-				food_list = food_list_request(cursor, food_item.cat_id)
-				index_list = []
+				session_list.food = food_list_request(cursor, food_item.cat_id)
 				print("\nVeuillez selectionner un des aliments suivant avec son numero d'index.")
 				print("index:  0","  pour QUITTER")
-				for index, element in enumerate(food_list):
+				for index, element in enumerate(session_list.food):
 					print("index: ", index+1,"  pour l'aliment' :  ", element[0].upper())
-					index_list.append(str(index+1))
+					session_list.food_index.append(str(index+1))
 				food_select = input ("Aliment selectionne n°= ")
 				if cat_select == '0':
 					session.pick_food = True
@@ -70,10 +71,10 @@ with connection.cursor() as cursor:
 					session.save = True
 					session.main_loop = False
 					pass
-				elif food_select in index_list:
-					food_item = food_item_request(cursor, food_item.cat,food_item.cat_id)
+				elif food_select in session_list.food_index:
+					food_item = food_item_request(cursor, food_item.cat, food_item.cat_id)
 					session.pick_food = True
-					subst_item = substitute_request(cursor,food_item.cat, food_item.cat_id, food_item.id)
+					subst_item = substitute_request(cursor, food_item.cat, food_item.cat_id, food_item.id)
 					if food_item.nutriscore == subst_item.nutriscore:
 						print("\nDésolé mais nous n'avons trouver aucun substitut avec un meilleur nutriscore.\
 							\nA nutriscore équivalent nous vous proposons cependant le produit suivant.")
@@ -105,8 +106,8 @@ with connection.cursor() as cursor:
 
 		# user want to see old research
 		elif actions == "2":
-			history_list = history_request(cursor, 4)
-			for element in history_list:
+			session_list.history = history_request(cursor, 4)
+			for element in session_list.history:
 				print("\n\nDate de la recherche: ", element.date_request,
 						"\nNom de l'aliment: ", element.origin_name,
 						"\nNom du substitut:  ", element.name,

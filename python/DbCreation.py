@@ -1,9 +1,5 @@
 #coding: utf-8
 import pymysql.cursors 
-import json
-import pprint
-import requests
-
 
 """
 This file stores functions for creating the MySQL database

@@ -2,22 +2,14 @@
 import pymysql.cursors 
 import pickle
 import json
-import pprint
 import requests
-from .newfunc import *
-"""
-Stores functions for interracting with MySQL database through python's instructions.
 
-Contains functions:
-ask_for_db
-backup_request
-connect_db
-cat_request
-food_request
-implement_request
-save_request
-substitute_request
-"""
+from .DbCreation import *
+from .Food import *
+from .Substitute import *
+from .Checkpoint import *
+
+
 
 def api_extraction(categorie, cat_id):
 	r = requests.get(('https://fr.openfoodfacts.org/categorie/produits-tripiers/categorie/{}.json').format(categorie))

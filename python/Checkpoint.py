@@ -2,11 +2,45 @@
 import pymysql.cursors
 import requests
 import json
-from .Food import Food
-from .SessionLists import SessionLists
-from .Substitute import Substitute
+from .food import Food
+from .sessionlists import SessionLists
+from .substitute import Substitute
+
+""" Rule the class 'checkpoint.Checkpoint' """
 
 class Checkpoint():
+	"""Class 'substitute.Substitute'
+	Rule all the loops and 'actions' in the main.py 
+	and Actions.py files.
+	
+	Attributs (= Default):
+	dtb_exist  = False 
+	dtb_create = False 
+	dtb_impl = False
+	connect_dtb = False
+	main_loop = True
+	pick_cat = False 
+	pick_food = False 
+	select_subs = False 
+	save = False
+	history = False
+	hide_command = False
+	
+	Class methods:
+		-_api_extraction
+		-_implement_cat
+		-_implement_food
+		-ask_for_db
+		-checkpoint_reset
+		-connect_db
+		-db_creation
+		-db_implementation
+		-save_request
+		-sql_command
+
+	Example:
+		session = Checkpoint()
+	"""
 	def __init__(self):
 		self.dtb_exist  = False 
 		self.dtb_create = False 
@@ -66,11 +100,21 @@ class Checkpoint():
 
 	def ask_for_db(self, cursor, db):
 		""" 
-		Check if database exist or not. 
-		Return True or False depending on the case.
-		Takes two argument: "cursor" for connection with Mysql.
-		"db" for database wanted
-		"""
+		Ask MySQL for presence of 'db' database.
+		Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
+		to True or false depending on MySQL answer
+		
+		Arguments:
+		 self: class 'checkpoint.Checkpoint'
+		 cursor: class 'pymysql.cursors.DictCursor'
+		 db: str
+
+		 Return:
+		 /
+
+		 Example:
+		 	self.ask_for_db(cursor, db)
+		 """
 		sql = " SHOW DATABASES;"
 		cursor.execute(sql)
 		db_list = []
@@ -82,6 +126,18 @@ class Checkpoint():
 			self.dtb_exist = False
 
 	def checkpoint_reset(self):
+		""" Reset attributs 'pick_cat', 'pick_food', 'select_subs', 'save',
+		'history' and 'hided_comand' to default values (= False).
+
+		 Arguments:
+		 self: class 'checkpoint.Checkpoint'
+
+		 Return:
+		 /
+
+		 Example:
+		 	self.checkpoint_reset()
+		 """
 		self.pick_cat = False 
 		self.pick_food = False 
 		self.select_subs = False 
@@ -91,11 +147,21 @@ class Checkpoint():
 
 	def connect_db(self, cursor, db):
 		""" 
-		Focus MySQL on use of Pur_Beurre database.
-		Return True when done.
-		Takes two arguments: "cursor" for connection with Mysql.
-		"db" for database wanted
-		"""
+		Focus MySQL on use of 'db' database.
+		Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
+		to True when done
+		
+		Arguments:
+		 self: class 'checkpoint.Checkpoint'
+		 cursor: class 'pymysql.cursors.DictCursor'
+		 db: str
+
+		 Return:
+		 /
+
+		 Example:
+		 	self.connect_db(cursor, db)
+		 """
 		sql ="USE %s;"%db
 		cursor.execute(sql)
 		self.connect_dtb = True

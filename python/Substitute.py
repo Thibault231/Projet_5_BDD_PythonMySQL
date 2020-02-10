@@ -1,22 +1,49 @@
 #coding: utf-8
 import pymysql.cursors
-from .Food import Food
+from .food import Food
+""" Rule the class 'substitute.Substitute' """
 
 class Substitute(Food):
-	"""  Initiate characters attributs """
+	"""
+	Class 'substitute.Substitute'
+
+	Heritance:
+		-Class food.Food
+	
+	Attributs:
+	origin_name(str), date_request(str)
+
+	All attributs are default str('none')
+
+	Class methods:
+		-substitute_request
+
+	Example:
+		subst_item = Subsitute()
+	"""
 	def __init__(self):
 		Food.__init__(self)
 		self.origin_name = "none"
 		self.date_request = "none"
 
 	def substitute_request(self, cursor,v_cat, v_cat_id, v_id):
-		""" 
-		Select one row from the table "Main" with the same v_cat and v_nutri
-		than the row indicated by v_id.
-		Return a dictionnary object.
-		Takes four arguments: "cursor" for connection with Mysql,
-		"v_cat, v_nutri, v_id" for identifying substitute.
-		"""
+		""" Implement all Substitute object's attributs with a picking
+	row of the table Food in Pur_Beurre database.
+
+	 Arguments:
+	 self: class 'substitute.Substitute'
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 v_cat: str
+	 v_cat_id: int
+	 v_id: int
+
+	 Return:
+	 /
+
+	 Example:
+	 	self.substitute_request(cursor,v_cat, v_cat_id, v_id)
+	 """
 		sql = "SELECT * \
 		FROM Food \
 		WHERE fk_category_id= %(cat_id)s AND id!= %(id)s \

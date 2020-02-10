@@ -1,11 +1,48 @@
 #coding: utf-8
 import pymysql.cursors 
-from .Food import Food
-from .Substitute import Substitute
-from .Checkpoint import Checkpoint
-from .SessionLists import SessionLists
+from .food import Food
+from .substitute import Substitute
+from .checkpoint import Checkpoint
+from .sessionlists import SessionLists
+
+"""
+Rule the program for the choices that user do.
+Contain six functions:
+	-action_db_connection	
+	-action_pick_categorie
+	-action_pick_food
+	-action_save
+	-action_history
+	-action_hided_command
+
+Always take cursor and connection as argument for MySQL connection.
+Depending on the function, take Food()/Substitute()/Checkpoint() 
+or SessionLists objects as arguments.
+Depending on the function, Food()/Substitute()/Checkpoint() 
+or SessionLists objects are returned 
+
+Example:
+	Checkpoint, SessionList = action_db_connection(cursor, connection, Checkpoint, SessionLists)
+
+"""
 
 def action_db_connection(cursor, connection, session, session_list ):
+	""" Controle if the database exist. If not create it and implement
+	 it with datas from OpenFoodFacts
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'checkpoint.Checkpoint'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 session_list: classe 'SessionList.SessionList'
+
+	 Example:
+	 	session, session_list = action_db_connection(cursor, connection, session, session_list)
+	 """
 	session.ask_for_db(cursor, 'pur_beurre')
 	
 	if not session.dtb_exist:
@@ -18,6 +55,29 @@ def action_db_connection(cursor, connection, session, session_list ):
 	
 		
 def action_pick_categorie(cursor, connection, session, food_item, subst_item, session_list):
+	""" Display all distint category of the table Category in Pur_Beurre database.
+	Make the user do a choice between them inputing a number.
+	 it with datas from OpenFoodFacts
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Example:
+	session, food_item, subst_item, session_list = action_pick_categorie(cursor,
+	connection, session, food_item, subst_item, session_list)
+	 """
+
 	while not session.pick_cat:
 		session_list.cat_list_request(cursor)
 		print("\nSelectionnez une des categories suivantes par son numero d'index\n")
@@ -47,6 +107,28 @@ def action_pick_categorie(cursor, connection, session, food_item, subst_item, se
 	return session, food_item, subst_item, session_list
 			
 def action_pick_food(cursor, connection, session, food_item, subst_item, session_list):
+	""" Display all distint food item name of the table Food in Pur_Beurre database.
+	Make the user do a choice between them inputing a number.
+	Select the best substitute of the food item in the table Food and displays it.
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Example:
+	session, food_item, subst_item, session_list = action_pick_food(cursor,
+	connection, session, food_item, subst_item, session_list)
+	 """
 	while not session.pick_food:
 		session_list.food_list_request(cursor, food_item.cat_id)
 		print("\nVeuillez selectionner un des aliments suivant avec son numero d'index.")
@@ -86,6 +168,27 @@ def action_pick_food(cursor, connection, session, food_item, subst_item, session
 	return session, food_item, subst_item, session_list
 
 def action_save(cursor, connection, session, food_item, subst_item, session_list):
+	""" Propose to the user to save its research in the table 'History' of
+	the Pur_Beurre database. Do it if asked.
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 food_item: class 'food.Food'
+	 subst_item: class 'subsitute.Substitute'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Example:
+	session, food_item, subst_item, session_list = action_save(cursor,
+	connection, session, food_item, subst_item, session_list)
+	 """
 	while not session.save:
 		save_select = input ("\nVoulez vous sauvegarder votre recherche et retourner au menu principal?\n (O= oui / N= non / Q= QUITTER) >>: ")
 		
@@ -107,6 +210,22 @@ def action_save(cursor, connection, session, food_item, subst_item, session_list
 	return session, food_item, subst_item, session_list
 
 def action_history(cursor, connection, session, session_list):
+	""" Asked the user for the number of previous researches it want to
+	be displayed. Displayed them if asked.
+	Takes datas from the table 'History' of the Pur_Beurre database.
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'Checkpoint.Checkpoint'
+	 session_list: classe 'sessionsist.SessionList'
+
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 
+	 Example:
+	session = action_history(cursor, connection, session, session_list)
+	 """
 	while not session.history:
 		len_history = input("Voulez vous afficher: Toutes les anciennes recherches : 'T'\
 			                      La dernière recherche : 'D'\
@@ -144,6 +263,20 @@ def action_history(cursor, connection, session, session_list):
 	return session, session_list
 
 def action_hided_command(cursor, connection, session):
+	""" Allowed user to input a MySQL command and execute it.
+	Displayed MySQL response.
+
+	 Arguments:
+	 cursor: class 'pymysql.cursors.DictCursor'
+	 connection: class 'pymysql.connections.Connection'
+	 session: class 'Checkpoint.Checkpoint'
+	
+	 Return:
+	 session: class 'Checkpoint.Checkpoint'
+	 
+	 Example:
+	session = action_hided_command(cursor, connection, session)
+	 """
 	while not session.hide_command:
 		sql_instructions = input("Entrez l'instruction sql avec un seul ';' ou Q pour QUITTER.\n >>: ")
 

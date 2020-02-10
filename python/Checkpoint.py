@@ -55,6 +55,22 @@ class Checkpoint():
 		self.hide_command = False
 
 	def _api_extraction(self, categorie, cat_id):
+		""" 
+		Return a list of class food.Food objects implemented with cat_id and
+		an API from OpenfoodFacts. Datas are taken from the page "categorie".
+
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		cat_id: int
+
+		Return:
+		food_list: list (list of "food.Food")
+
+		Example:
+			self._api_extraction(categorie, cat_id)
+		"""
 		r = requests.get(('https://fr.openfoodfacts.org/categorie/{}.json').format(categorie))
 		file = r.json()
 		food_list = []
@@ -75,6 +91,23 @@ class Checkpoint():
 		return food_list
 
 	def _implement_cat(self, cursor, connection, v_cat):
+		""" 
+		Insert a new row in the table Category of database Pur_Beurre
+		with column name = v_cat.
+		Return the id (cat_id) of this new row.
+
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		v_cat: str (category's name)
+
+		Return:
+		cat_id: int 
+
+		Example:
+			self._implement_cat(cursor, connection, v_cat)
+		"""
 		sql="INSERT INTO Category (cat_name) VALUES (%s);"
 		sql1 = "SELECT id FROM Category WHERE cat_name = %s LIMIT 1;"
 		cursor.execute(sql, v_cat)
@@ -85,7 +118,31 @@ class Checkpoint():
 		return cat_id
 
 	def _implement_food(self, cursor, connection, v_cat, v_name,
-	 v_nutriscore,v_descriptions, v_market, v_url_id):    
+	 v_nutriscore,v_descriptions, v_market, v_url_id): 
+		""" 
+		Create a new row in the table 'Food' of Pur_Beurre database. 
+		Insert inside values of v_cat, v_name, v_nutriscore, v_description,
+		v_market and v_url_id.
+
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		v_cat: str (category's name)
+		v_name: str
+		v_nutriscore: str
+		v_descriptions: str
+		v_market: str
+		v_url_id: int
+
+		Return:
+		Bolean: True 
+
+		Example:
+			self._implement_food(cursor, connection, v_cat, v_name,v_nutriscore,
+			v_descriptions, v_market, v_url_id)
+		"""
+
 		variables = {"v_cat":v_cat, "v_name":v_name, "v_nutriscore":v_nutriscore,
 		"v_descriptions":v_descriptions,"v_market":v_market, "v_url_id":v_url_id}
 
@@ -168,9 +225,21 @@ class Checkpoint():
 
 	def db_creation(self, cursor, connection):
 		""" 
-		Create  MySQl database  call Pur_Beurre with two tables: Main and BackUp.
-		Take two arguments: cursor and connection.
-		Return True if succeed
+		Create  MySQl database  call Pur_Beurre with three tables: Food,
+		Category and History.
+		Turn attribut 'dtb_create' of 'checkpoint.Checkpoint' object to true
+		 when done.
+		
+		Arguments:
+		 self: class 'checkpoint.Checkpoint'
+		 cursor: class 'pymysql.cursors.DictCursor'
+		 connection: class 'pymysql.connections.Connection'
+
+		Return:
+		/
+
+		Example:
+		 	self. db_creation(cursor, connection)
 		"""
 		sql0 = "DROP DATABASE IF EXISTS Pur_Beurre;"
 		
@@ -233,28 +302,55 @@ class Checkpoint():
 		cursor.execute(sql8) 
 		cursor.execute(sql9)
 		connection.commit()
+		
 		self.dtb_create = True
 
 	def db_implementation(self, cursor, connection, cat_list):
-			""" 
-			Implement Pur_Beurre data base with datas from Open Food Fact API.
-			Use a id_list for API's requests.
-			Takes three arguments: cursor, connection, id_list.
-			"""
-			for element in cat_list:
-				cat_id = self._implement_cat(cursor, connection, element)
-				food_list = self._api_extraction(element, cat_id)
-				for element in food_list:
-					self._implement_food(cursor, connection, element.cat, element.name, element.nutriscore,
-					element.descriptions, element.market, element.id)
-			self.dtb_impl = True
+		""" 
+		Rule the imlementation of tables Food and Category of Pur_Beurre database.
+		Use API for the table Food and cat_list for the table Category.
+		Turn attribut 'dtb_impl' of 'checkpoint.Checkpoint' object to true
+		when done.
+		
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		cat_list: list of str (sql command)
+
+		Return:
+		/
+
+		Example:
+		 	self.db_implementation(self, cursor, connection, cat_list)
+		"""
+		for element in cat_list:
+			cat_id = self._implement_cat(cursor, connection, element)
+			food_list = self._api_extraction(element, cat_id)
+			for element in food_list:
+				self._implement_food(cursor, connection, element.cat, element.name, element.nutriscore,
+				element.descriptions, element.market, element.id)
+		self.dtb_impl = True
 
 	def save_request(self, cursor, connection, v_fk_subst_id, v_fk_category_id, v_origin_name):
 		"""
-		Save substitute's datas and food item's name in the table  "BackUp"
-		for the current research. 
-		Takes three arguments: "cursor" for connection with Mysql,
-		"v_substitute, v_id" for object to save.
+		Save substitute's id and food item's name and id in the table  'History' of the database
+		Pur_beurre for the current research. 
+		Turn attribut 'save' of 'checkpoint.Checkpoint' object to true when done.
+		
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		v_fk_subst_id: int (foreign key from table Food)
+		v_fk_category_id: int (foreign key from table Category)
+		v_origin_name: str 
+
+		Return:
+		/
+
+		Example:
+		 	self.save_request(cursor, connection, v_fk_subst_id, v_fk_category_id, v_origin_name)
 		"""
 		sql = "INSERT INTO History (fk_subst_id, date_request, fk_category_id, origin_name) \
 		VALUES (%(subst_id)s, NOW(), %(cat_id)s, %(origin_name)s );"
@@ -265,6 +361,23 @@ class Checkpoint():
 		self.save = True
 
 	def sql_command(self, cursor, connection, sql_instructions):
+		""" 
+		Transfert sql instructions from Python console to MySQL console and
+		execute them.
+		Return MySql returns when done.
+		
+		Arguments:
+		self: class 'checkpoint.Checkpoint'
+		cursor: class 'pymysql.cursors.DictCursor'
+		connection: class 'pymysql.connections.Connection'
+		sql_instructions: str (sql command)
+
+		Return:
+		sql_message: list of str objects
+
+		Example:
+		 	self.sql_command(cursor, connection, sql_instructions)
+		"""
 		sql = "%s"%sql_instructions
 		cursor.execute(sql)
 		connection.commit()

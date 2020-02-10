@@ -7,22 +7,19 @@ from python.Substitute import *
 from python.Checkpoint import *
 from python.SessionLists import *
 
-
-
-def block_pick_categorie(cursor, connection, session, session_list)
-	id_list = ['abats', 'popcorn']
+def action_db_connection(cursor, connection, session, session_list ):
 	session.dtb_exist = ask_for_db(cursor, 'pur_beurre')
 	
 	if not session.dtb_exist:
 		session.dtb_create = db_creation(cursor, connection)
-		db_implementation(cursor, connection, id_list)
-	link2db = connect_db(cursor, 'pur_beurre')
-	
+		db_implementation(cursor, connection, session_list.cat_impl)
+	link2db = connect_db(cursor, 'pur_beurre')	
+		
 	return session, session_list
 
 	
 		
-def block_pick_categorie(cursor, connection, session, food_item, subst_item, session_list)
+def action_pick_categorie(cursor, connection, session, food_item, subst_item, session_list):
 	while not session.pick_cat:
 		session_list.cat = cat_request(cursor)
 		print("\nSelectionnez une des categories suivantes par son numero d'index\n")
@@ -52,7 +49,7 @@ def block_pick_categorie(cursor, connection, session, food_item, subst_item, ses
 		
 		return session, food_item, subst_item, session_list
 			
-def block_pick_food(cursor, connection, session, food_item, subst_item, session_list)
+def action_pick_food(cursor, connection, session, food_item, subst_item, session_list):
 	while not session.pick_food:
 		session_list.food = food_list_request(cursor, food_item.cat_id)
 		print("\nVeuillez selectionner un des aliments suivant avec son numero d'index.")
@@ -63,7 +60,7 @@ def block_pick_food(cursor, connection, session, food_item, subst_item, session_
 			session_list.food_index.append(str(index+1))
 		food_select = input ("Aliment selectionne n°= ")
 		
-		if cat_select == '0':
+		if food_select == '0':
 			session.pick_food = True
 			session.select_subs = True
 			session.save = True
@@ -74,6 +71,7 @@ def block_pick_food(cursor, connection, session, food_item, subst_item, session_
 			food_item = food_item_request(cursor, food_item.cat, food_item.cat_id)
 			session.pick_food = True
 			subst_item = substitute_request(cursor, food_item.cat, food_item.cat_id, food_item.id)
+			
 			if food_item.nutriscore == subst_item.nutriscore:
 				print("\nDésolé mais nous n'avons trouver aucun substitut avec un meilleur nutriscore.\
 					\nA nutriscore équivalent nous vous proposons cependant le produit suivant.")
@@ -91,7 +89,7 @@ def block_pick_food(cursor, connection, session, food_item, subst_item, session_
 	
 	return session, food_item, subst_item, session_list
 
-def block_save(cursor, connection, session, food_item, subst_item, session_list)
+def action_save(cursor, connection, session, food_item, subst_item, session_list):
 	while not session.save:
 		save_select = input ("\nVoulez vous sauvegarder votre recherche et retourner au menu principal?\n (O= oui / N= non / Q= QUITTER) >>: ")
 		
@@ -112,28 +110,28 @@ def block_save(cursor, connection, session, food_item, subst_item, session_list)
 	
 	return session, food_item, subst_item, session_list
 
-def block_history(cursor, connection, session, session_list)
+def action_history(cursor, connection, session, session_list):
 	session_list.history = history_request(cursor, 4)
 		
-		for element in session_list.history:
-			print("\n\nDate de la recherche: ", element.date_request,
-					"\nNom de l'aliment: ", element.origin_name,
-					"\nNom du substitut:  ", element.name,
-					"\nCatégorie d'aliment: ", element.cat,
-					"\nMagasin où l'acheter: ", element.market,
-					"\nNutriscore: ", element.nutriscore,
-					"\nDescription du produit: ", element.descriptions,
-					"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
-					)
+	for element in session_list.history:
+		print("\n\nDate de la recherche: ", element.date_request,
+				"\nNom de l'aliment: ", element.origin_name,
+				"\nNom du substitut:  ", element.name,
+				"\nCatégorie d'aliment: ", element.cat,
+				"\nMagasin où l'acheter: ", element.market,
+				"\nNutriscore: ", element.nutriscore,
+				"\nDescription du produit: ", element.descriptions,
+				"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
+				)
 
-		end_answer = input ("\nTapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
-		
-		if end_answer.lower() == "q":
-			session.main_loop = False
+	end_answer = input ("\nTapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
+	
+	if end_answer.lower() == "q":
+		session.main_loop = False
 
 	return session, session_list
 
-def block_hided_command(cursor, connection, session)
+def action_hided_command(cursor, connection, session):
 	sql_instructions = input("Entrez l'instruction sql avec un seul ';' >>: ")
 	session.hide_command = sql_command(cursor, connection, sql_instructions)
 	print("\nCommande exécutée")

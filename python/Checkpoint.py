@@ -10,3 +10,10 @@ class Checkpoint():
 		self.select_subs = False 
 		self.save = False
 		self.hide_command = False
+
+	def checkpoint_reset(self):
+		self.pick_cat = False 
+		self.pick_food = False 
+		self.select_subs = False 
+		self.save = False
+		self.hide_command = False

@@ -4,8 +4,9 @@ from .Substitute import Substitute
 
 class SessionLists():
 	def __init__(self):
-		self.cat_impl = ['abats', 'popcorn']
-		self.cat_url = []
+		self.cat_impl = ['abats', 'popcorn','margarines','boudins-noirs','cremes-de-marrons',
+		'yaourts-natures','taboules','cereales-pour-petit-dejeuner','galettes-de-riz-souffle', 'sauces-tomate',
+		'citrons', 'biscuits-au-chocolat', 'chocolats-noirs', 'pates-brisees', 'jus-d-orange']
 		self.food = []
 		self.food_index = []
 		self.cat =[]
@@ -39,7 +40,7 @@ class SessionLists():
 		for element in cursor:
 			self.food.append((element['name'],element['id']))	
 
-	def history_request(self, cursor, v_len_history):
+	def history_request(self, cursor, v_len_history=""):
 		""" 
 		Call all datas contains in the table "BackUp"
 		Return a list object.
@@ -51,8 +52,8 @@ class SessionLists():
 	    INNER JOIN Food ON Food.id = History.fk_subst_id\
 	    INNER JOIN Category ON Category.id = Food.fk_category_id \
 	    ORDER BY History.date_request, Food.id\
-	    LIMIT %s;"
-		cursor.execute(sql, v_len_history)
+	    %s;"%v_len_history
+		cursor.execute(sql)
 		for element in cursor:
 			history_item = Substitute()
 			history_item.date_request = (element['date_request'])

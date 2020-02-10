@@ -17,10 +17,11 @@ class Checkpoint():
 		self.pick_food = False 
 		self.select_subs = False 
 		self.save = False
+		self.history = False
 		self.hide_command = False
 
 	def _api_extraction(self, categorie, cat_id):
-		r = requests.get(('https://fr.openfoodfacts.org/categorie/produits-tripiers/categorie/{}.json').format(categorie))
+		r = requests.get(('https://fr.openfoodfacts.org/categorie/{}.json').format(categorie))
 		file = r.json()
 		food_list = []
 		
@@ -85,6 +86,7 @@ class Checkpoint():
 		self.pick_food = False 
 		self.select_subs = False 
 		self.save = False
+		self.history = False
 		self.hide_command = False
 
 	def connect_db(self, cursor, db):

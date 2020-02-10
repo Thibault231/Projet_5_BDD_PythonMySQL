@@ -27,7 +27,7 @@ def action_pick_categorie(cursor, connection, session, food_item, subst_item, se
 			print("index: ", index+1,"  pour la categorie :  ", element[0].upper())
 			session_list.cat_index.append(str(index+1))
 		
-		cat_select = input ("Categorie selectionnee n°= ")
+		cat_select = input("Categorie selectionnee n°= ")
 		
 		if cat_select.lower() == 'q':
 			session.pick_cat = True 
@@ -38,14 +38,13 @@ def action_pick_categorie(cursor, connection, session, food_item, subst_item, se
 		elif cat_select in session_list.cat_index:
 			food_item.cat = session_list.cat[int(cat_select) - 1][0]
 			food_item.cat_id = session_list.cat[int(cat_select) - 1][1]
-			print(food_item.cat, food_item.cat_id)
 			session.pick_cat = True
 		
 		else:
 			session_list.cat = []
 			session_list.cat_index = []
 		
-		return session, food_item, subst_item, session_list
+	return session, food_item, subst_item, session_list
 			
 def action_pick_food(cursor, connection, session, food_item, subst_item, session_list):
 	while not session.pick_food:
@@ -57,7 +56,7 @@ def action_pick_food(cursor, connection, session, food_item, subst_item, session
 			print("index: ", index+1,"  pour l'aliment' :  ", element[0].upper())
 			session_list.food_index.append(str(index+1))
 		
-		food_select = input ("Aliment selectionne n°= ")
+		food_select = input("Aliment selectionne n°= ")
 		
 		if food_select == 'q':
 			session.pick_food = True
@@ -108,22 +107,39 @@ def action_save(cursor, connection, session, food_item, subst_item, session_list
 	return session, food_item, subst_item, session_list
 
 def action_history(cursor, connection, session, session_list):
-	session_list.history_request(cursor, 4)
-		
-	for element in session_list.history:
-		print("\n\nDate de la recherche: ", element.date_request,
-				"\nNom de l'aliment: ", element.origin_name,
-				"\nNom du substitut:  ", element.name,
-				"\nCatégorie d'aliment: ", element.cat,
-				"\nMagasin où l'acheter: ", element.market,
-				"\nNutriscore: ", element.nutriscore,
-				"\nDescription du produit: ", element.descriptions,
-				"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
-				)
+	while not session.history:
+		len_history = input("Voulez vous afficher: Toutes les anciennes recherches : 'T'\
+			                      La dernière recherche : 'D'\
+			                      Quitter : 'Q' \n>>: ")
+		if len_history.lower() == 'd':
+			session_list.history_request(cursor, 'LIMIT 1')
+			session.history = True
 
-	end_answer = input ("\nTapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
-	if end_answer.lower() == "q":
-		session.main_loop = False
+		elif len_history.lower() == 't':
+			session_list.history_request(cursor)
+			session.history = True
+
+		elif len_history.lower() == "q":
+			session.history = True
+			session.main_loop = False
+		
+		else:
+			print("Veuillez entrer 'Q', 'D' ou 'T'.")
+
+		for element in session_list.history:
+			print("\n\nDate de la recherche: ", element.date_request,
+					"\nNom de l'aliment: ", element.origin_name,
+					"\nNom du substitut:  ", element.name,
+					"\nCatégorie d'aliment: ", element.cat,
+					"\nMagasin où l'acheter: ", element.market,
+					"\nNutriscore: ", element.nutriscore,
+					"\nDescription du produit: ", element.descriptions,
+					"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
+					)
+
+		end_answer = input ("\nTapez 'Q' pour QUITTER ou n'imorte quelle touche pour retourner au menu principal.\n >>:")
+		if end_answer.lower() == "q":
+			session.main_loop = False
 
 	return session, session_list
 

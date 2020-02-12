@@ -11,7 +11,7 @@ session_list = SessionLists()
 session = Checkpoint()
 
 # Check DB pur_beurre exists. Create it if not
-connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+connection = pymysql.connect(host='localhost', user= 'root', password= '', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 with connection.cursor() as cursor:
 	print(type(cursor), type(connection))
 	

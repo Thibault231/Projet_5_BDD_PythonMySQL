@@ -18,18 +18,21 @@ session_list = SessionLists()
 session = Checkpoint()
 
 # Check that DB pur_beurre exists. Create it if not.
-connection = pymysql.connect(host='localhost', user= user_id, password= user_password, db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+connection = pymysql.connect(host='localhost', user= user_id, password= user_password, db='sys',
+ charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 with connection.cursor() as cursor:
+	print(type(cursor), type(connection))
+	
 	session, session_list = ac.action_db_connection(cursor, connection, session, session_list )
 	
+	print("Welcome to Pur_Butter program")
 
 	# program's main loop
-	print("Welcome to Pur_Butter program")
 	while session.main_loop:
 		actions = input("\n\nQuelle action souhaitez vous effectuer?\nTapez le numéro d'index de l'action.\n1= Rechercher un substitut pour un aliment\
 		 \n2= Voir mes substituts enregistrés.\n Q= Quitter le programme.\nChoix de l'action' n°= ")		
 		
-		# user want to start a research for a substitute
+		# user start a research for a substitute
 		if actions == "1":
 			food_item = Food()
 			subst_item = Substitute()
@@ -43,11 +46,11 @@ with connection.cursor() as cursor:
 			# user choose to save or not in the datagase
 			session, food_item, subst_item, session_list = ac.action_save(cursor, connection, session, food_item, subst_item, session_list)
 
-		# user want to see previous researchs
+		# user want to see the old researchs
 		elif actions == "2":
 			session, session_list = ac.action_history(cursor, connection, session, session_list)
 		
-		# hiding command for interracting with MySQL.
+		# hidding command for interracting with the database.
 		elif actions == "3":
 			session = ac.action_hided_command(cursor, connection, session)
 

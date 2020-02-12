@@ -202,7 +202,7 @@ def action_save(cursor, connection, session, food_item, subst_item, session_list
 			session.save = True
 		
 		elif save_select.lower() == "q":
-			session.main_loop = False
+			session.save = True
 		
 		else:
 			print("Veuillez selectionner 'O', 'N' ou 'Q'.")
@@ -227,9 +227,8 @@ def action_history(cursor, connection, session, session_list):
 	session = action_history(cursor, connection, session, session_list)
 	 """
 	while not session.history:
-		len_history = input("Voulez vous afficher: Toutes les anciennes recherches : 'T'\
-			                      La dernière recherche : 'D'\
-			                      Quitter : 'Q' \n>>: ")
+		len_history = input("Voulez vous afficher:\n    \
+Toutes les anciennes recherches : 'T'\n    La dernière recherche : 'D'\n    Quitter : 'Q' \n>>: ")
 		if len_history.lower() == 'd':
 			session_list.history_request(cursor, 'LIMIT 1')
 			session.history = True

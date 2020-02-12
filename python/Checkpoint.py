@@ -249,7 +249,7 @@ class Checkpoint():
 		
 		sql3 = "CREATE TABLE Food (\
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
-		name VARCHAR(100) DEFAULT NULL,\
+		name VARCHAR(100) NOT NULL,\
 		nutriscore CHAR(1) NOT NULL,\
 		descriptions TEXT DEFAULT NULL,\
 		market VARCHAR(200) DEFAULT NULL,\
@@ -260,7 +260,7 @@ class Checkpoint():
 
 		sql4 = "CREATE TABLE Category (\
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
-		cat_name VARCHAR(50) NOT NULL,\
+		cat_name VARCHAR(60) NOT NULL,\
 		PRIMARY KEY (id)\
 		) ENGINE=InnoDB;"
 

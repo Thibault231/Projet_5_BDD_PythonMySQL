@@ -10,9 +10,9 @@ class SessionLists():
 		while running program.
 		
 		Attributs (= Default):
-		cat_impl = ['abats', 'popcorn','margarines','boudins-noirs','cremes-de-marrons',
-			'yaourts-natures','taboules','cereales-pour-petit-dejeuner','galettes-de-riz-souffle', 'sauces-tomate',
-			'citrons', 'biscuits-au-chocolat', 'chocolats-noirs', 'pates-brisees', 'jus-d-orange']
+		cat_impl = ['abats', 'taboules-aux-legumes','margarines','compotes-pommes-nature','sauces-tomates-au-basilic',
+		'yaourts-natures','brioches-tranchees','cereales-pour-petit-dejeuner','galettes-de-riz-souffle', 'pestos-au-basilic',
+		'citrons', 'biscuits-au-chocolat', 'chocolats-noirs-sales', 'pates-a-pizza', 'jus-d-orange']
 		food: list (= empty) 
 		food_index: list (= empty) 
 		cat_index: list (= empty) 
@@ -29,9 +29,9 @@ class SessionLists():
 	"""
 
 	def __init__(self):
-		self.cat_impl = ['abats', 'popcorn','margarines','boudins-noirs','cremes-de-marrons',
-		'yaourts-natures','taboules','cereales-pour-petit-dejeuner','galettes-de-riz-souffle', 'sauces-tomate',
-		'citrons', 'biscuits-au-chocolat', 'chocolats-noirs', 'pates-brisees', 'jus-d-orange']
+		self.cat_impl = ['abats', 'taboules-aux-legumes','margarines','compotes-pommes-nature','sauces-tomates-au-basilic',
+		'yaourts-natures','brioches-tranchees','cereales-pour-petit-dejeuner','galettes-de-riz-souffle', 'pestos-au-basilic',
+		'citrons', 'biscuits-au-chocolat', 'chocolats-noirs-sales', 'pates-a-pizza', 'jus-d-orange']
 		self.food = []
 		self.food_index = []
 		self.cat =[]
@@ -43,7 +43,7 @@ class SessionLists():
 		in the Pur_Beurre database in the 'cat_list' attribut of the
 		 'sessionlist.SessionList' object.
 
-		 Arguments:
+		 Args:
 		 self: class 'sessionlist.SessionList'
 		 cursor: class 'pymysql.cursors.DictCursor'
 
@@ -64,7 +64,7 @@ class SessionLists():
 		 'sessionlist.SessionList' object.
 		 Name and id are stocked in a tupple for each food item.
 
-		 Arguments:
+		 Args:
 		 self: class 'sessionlist.SessionList'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 v_cat_id: int
@@ -86,7 +86,7 @@ class SessionLists():
 		of class subsitute.Substitute from the tables 'History' of the 
 		database Pur_Beurre.
 
-		 Arguments:
+		 Args:
 		 self: class 'sessionlist.SessionList'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 v_len_history: int (default = "")
@@ -97,30 +97,50 @@ class SessionLists():
 		 Example:
 		 	self.history_request(cursor, v_len_history="")
 		 """
-		sql = "SELECT Category.cat_name, History.origin_name, History.date_request, Food.id,\
-		Food.name, Food.url_id, Food.descriptions, Food.market, Food.nutriscore \
+		sql = "SELECT Food.name, Food.nutriscore, Food.descriptions, Category.cat_name,\
+		History.date_request, Food.id, Food.market, Food.url_id\
 	    FROM History \
-	    INNER JOIN Food ON Food.id = History.fk_subst_id\
+	    INNER JOIN Food ON (Food.id = History.fk_subst_id)\
 	    INNER JOIN Category ON Category.id = Food.fk_category_id \
 	    ORDER BY History.date_request, Food.id\
 	    %s;"%v_len_history
 		cursor.execute(sql)
+		subst_list = []
 		for element in cursor:
+			subst_list.append([element['date_request'], element['name'], element['cat_name'],
+			element['market'], element['nutriscore'], element['descriptions']])
+
+		sq2 = "SELECT Food.name, Food.nutriscore, Food.descriptions\
+		FROM History \
+		INNER JOIN Food ON (Food.id = History.fk_origin_id), History.date_request, Food.id\
+		ORDER BY History.date_request, Food.id\
+		%s;"%v_len_history
+		cursor.execute(sq2)
+		origin_list = []
+		for element in cursor:
+			origin_list.append([element['name'], element['nutriscore'], element['descriptions']])
+			
+		for rank in range(len(subst_list)):
 			history_item = Substitute()
-			history_item.date_request = (element['date_request'])
-			history_item.name = (element['name'])
-			history_item.origin_name = (element['origin_name'])
-			history_item.cat = (element['cat_name'])
-			history_item.market = (element['market'])
-			history_item.nutriscore = (element['nutriscore'])
-			history_item.descriptions = (element['descriptions'])
+			history_item.date_request = subst_list[rank-1][0]
+			history_item.name =  subst_list[rank-1][1]
+			history_item.cat =  subst_list[rank-1][2]
+			history_item.market =  subst_list[rank-1][3]
+			history_item.nutriscore =  subst_list[rank-1][4]
+			history_item.descriptions =  subst_list[rank-1][5]
+			history_item.origin_name = origin_list[rank-1][0]
+			history_item.origin_nutriscore  = origin_list[rank-1][1]
+			history_item.origin_description = origin_list[rank-1][2]
 			self.history.append(history_item)
+
+
+
 
 	def sessionlists_reset(self):
 		""" Reset attributs 'food', 'food_index', cat, 'cat_index' and 'history'
 		to default values (= empty list).
 
-		 Arguments:
+		 Args:
 		 self: class 'sessionlist.SessionList'
 
 		 Return:

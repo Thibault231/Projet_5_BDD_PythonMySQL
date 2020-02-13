@@ -22,15 +22,18 @@ class Substitute(Food):
 		subst_item = Subsitute()
 	"""
 	def __init__(self):
-		Food.__init__(self)
+		super().__init__()
+		self.origin_id = "none"
 		self.origin_name = "none"
+		self.origin_description = "none"
+		self.origin_nutriscore = "none"
 		self.date_request = "none"
 
 	def substitute_request(self, cursor,v_cat, v_cat_id, v_id):
 		""" Implement all Substitute object's attributs with a picking
 	row of the table Food in Pur_Beurre database.
 
-	 Arguments:
+	 Args:
 	 self: class 'substitute.Substitute'
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'

@@ -33,7 +33,7 @@ class Food():
 		""" Implement all Food object's attributs with a picking
 		row of the table Food in Pur_Beurre database.
 
-		 Arguments:
+		 Args:
 		 self: class 'food.Food'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 connection: class 'pymysql.connections.Connection'

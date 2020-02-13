@@ -59,7 +59,7 @@ class Checkpoint():
 		Return a list of class food.Food objects implemented with cat_id and
 		an API from OpenfoodFacts. Datas are taken from the page "categorie".
 
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'
@@ -96,7 +96,7 @@ class Checkpoint():
 		with column name = v_cat.
 		Return the id (cat_id) of this new row.
 
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'
@@ -124,7 +124,7 @@ class Checkpoint():
 		Insert inside values of v_cat, v_name, v_nutriscore, v_description,
 		v_market and v_url_id.
 
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'
@@ -161,7 +161,7 @@ class Checkpoint():
 		Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
 		to True or false depending on MySQL answer
 		
-		Arguments:
+		Args:
 		 self: class 'checkpoint.Checkpoint'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 db: str
@@ -186,7 +186,7 @@ class Checkpoint():
 		""" Reset attributs 'pick_cat', 'pick_food', 'select_subs', 'save',
 		'history' and 'hided_comand' to default values (= False).
 
-		 Arguments:
+		 Args:
 		 self: class 'checkpoint.Checkpoint'
 
 		 Return:
@@ -208,7 +208,7 @@ class Checkpoint():
 		Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
 		to True when done
 		
-		Arguments:
+		Args:
 		 self: class 'checkpoint.Checkpoint'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 db: str
@@ -230,7 +230,7 @@ class Checkpoint():
 		Turn attribut 'dtb_create' of 'checkpoint.Checkpoint' object to true
 		 when done.
 		
-		Arguments:
+		Args:
 		 self: class 'checkpoint.Checkpoint'
 		 cursor: class 'pymysql.cursors.DictCursor'
 		 connection: class 'pymysql.connections.Connection'
@@ -266,7 +266,7 @@ class Checkpoint():
 
 		sql5 = "CREATE TABLE History (\
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
-		origin_name VARCHAR(100) NOT NULL,\
+		fk_origin_id INT UNSIGNED NOT NULL,\
 		fk_subst_id INT UNSIGNED NOT NULL,\
 		fk_category_id INT UNSIGNED NOT NULL,\
 		date_request DATETIME DEFAULT NOW(),\
@@ -277,16 +277,21 @@ class Checkpoint():
 		ON Food (fk_category_id, nutriscore, name, id);"
 
 		sql7 = "ALTER TABLE History\
+		ADD FOREIGN KEY (fk_origin_id) REFERENCES Food(id)\
+		ON DELETE CASCADE   \
+		ON UPDATE CASCADE;"
+
+		sql8 = "ALTER TABLE History\
 		ADD FOREIGN KEY (fk_subst_id) REFERENCES Food(id)\
 		ON DELETE CASCADE   \
 		ON UPDATE CASCADE;"
 		
-		sql8 = "ALTER TABLE History\
+		sql9 = "ALTER TABLE History\
 		ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)\
 		ON DELETE CASCADE   \
 		ON UPDATE CASCADE;"
 		
-		sql9 = "ALTER TABLE Food\
+		sql10 = "ALTER TABLE Food\
 		ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)\
 		ON DELETE CASCADE   \
 		ON UPDATE CASCADE;"
@@ -301,6 +306,7 @@ class Checkpoint():
 		cursor.execute(sql7)
 		cursor.execute(sql8) 
 		cursor.execute(sql9)
+		cursor.execute(sql10)
 		connection.commit()
 		
 		self.dtb_create = True
@@ -312,7 +318,7 @@ class Checkpoint():
 		Turn attribut 'dtb_impl' of 'checkpoint.Checkpoint' object to true
 		when done.
 		
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'
@@ -332,30 +338,30 @@ class Checkpoint():
 				element.descriptions, element.market, element.id)
 		self.dtb_impl = True
 
-	def save_request(self, cursor, connection, v_fk_subst_id, v_fk_category_id, v_origin_name):
+	def save_request(self, cursor, connection, v_fk_subst_id, v_fk_category_id, v_fk_origin_id):
 		"""
 		Save substitute's id and food item's name and id in the table  'History' of the database
 		Pur_beurre for the current research. 
 		Turn attribut 'save' of 'checkpoint.Checkpoint' object to true when done.
 		
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'
 		v_fk_subst_id: int (foreign key from table Food)
 		v_fk_category_id: int (foreign key from table Category)
-		v_origin_name: str 
+		v_fk_origin_id: str 
 
 		Return:
 		/
 
 		Example:
-		 	self.save_request(cursor, connection, v_fk_subst_id, v_fk_category_id, v_origin_name)
+		 	self.save_request(cursor, connection, v_fk_subst_id, v_fk_category_id, v_fk_origin_id)
 		"""
-		sql = "INSERT INTO History (fk_subst_id, date_request, fk_category_id, origin_name) \
-		VALUES (%(subst_id)s, NOW(), %(cat_id)s, %(origin_name)s );"
+		sql = "INSERT INTO History (fk_subst_id, date_request, fk_category_id, fk_origin_id) \
+		VALUES (%(subst_id)s, NOW(), %(cat_id)s, %(origin_id)s );"
 
-		variables = {"subst_id": v_fk_subst_id, "cat_id": v_fk_category_id, "origin_name": v_origin_name }
+		variables = {"subst_id": v_fk_subst_id, "cat_id": v_fk_category_id, "origin_id": v_fk_origin_id}
 		cursor.execute(sql, variables)
 		connection.commit()
 		self.save = True
@@ -366,7 +372,7 @@ class Checkpoint():
 		execute them.
 		Return MySql returns when done.
 		
-		Arguments:
+		Args:
 		self: class 'checkpoint.Checkpoint'
 		cursor: class 'pymysql.cursors.DictCursor'
 		connection: class 'pymysql.connections.Connection'

@@ -30,7 +30,7 @@ def action_db_connection(cursor, connection, session, session_list ):
 	""" Controle if the database exist. If not create it and implement
 	 it with datas from OpenFoodFacts
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'checkpoint.Checkpoint'
@@ -43,12 +43,18 @@ def action_db_connection(cursor, connection, session, session_list ):
 	 Example:
 	 	session, session_list = action_db_connection(cursor, connection, session, session_list)
 	 """
+	print("Controling for existence of database 'pur_beurre'")
 	session.ask_for_db(cursor, 'pur_beurre')
-	
+
 	if not session.dtb_exist:
+		print("Database doesnt exist.\n Creation of database." )
 		session.db_creation(cursor, connection)
+		print("Creation of database OK.\n Implementation from OpenfoodFacts.")
 		session.db_implementation(cursor, connection, session_list.cat_impl)
+		print("Implementation from OpenfoodFacts OK")
+	print("Connection to 'pur_beurre' database.")
 	session.connect_db(cursor, 'pur_beurre')	
+	print("Connection OK.")
 		
 	return session, session_list
 
@@ -59,7 +65,7 @@ def action_pick_categorie(cursor, connection, session, food_item, subst_item, se
 	Make the user do a choice between them inputing a number.
 	 it with datas from OpenFoodFacts
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'Checkpoint.Checkpoint'
@@ -111,7 +117,7 @@ def action_pick_food(cursor, connection, session, food_item, subst_item, session
 	Make the user do a choice between them inputing a number.
 	Select the best substitute of the food item in the table Food and displays it.
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'Checkpoint.Checkpoint'
@@ -140,7 +146,7 @@ def action_pick_food(cursor, connection, session, food_item, subst_item, session
 		
 		food_select = input("Aliment selectionne n°= ")
 		
-		if food_select == 'q':
+		if food_select.lower() == 'q':
 			session.pick_food = True
 			session.select_subs = True
 			session.save = True
@@ -171,7 +177,7 @@ def action_save(cursor, connection, session, food_item, subst_item, session_list
 	""" Propose to the user to save its research in the table 'History' of
 	the Pur_Beurre database. Do it if asked.
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'Checkpoint.Checkpoint'
@@ -194,7 +200,7 @@ def action_save(cursor, connection, session, food_item, subst_item, session_list
 		
 		if save_select.lower() == "o":
 			print(subst_item.id, subst_item.cat_id,food_item.id)
-			session.save_request(cursor, connection, subst_item.id, subst_item.cat_id, food_item.name)
+			session.save_request(cursor, connection, subst_item.id, subst_item.cat_id, food_item.id)
 			print("Votre recherche a bien été sauvegardée.")
 		
 		elif save_select.lower() == "n":
@@ -214,7 +220,7 @@ def action_history(cursor, connection, session, session_list):
 	be displayed. Displayed them if asked.
 	Takes datas from the table 'History' of the Pur_Beurre database.
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'Checkpoint.Checkpoint'
@@ -246,12 +252,14 @@ Toutes les anciennes recherches : 'T'\n    La dernière recherche : 'D'\n    Qui
 
 		for element in session_list.history:
 			print("\n\nDate de la recherche: ", element.date_request,
-					"\nNom de l'aliment: ", element.origin_name,
+					"\nNom de l'aliment d'origine: ", element.origin_name,
+					"\nNutriscore de l'aliment d'origine: ", element.origin_nutriscore,
+					"\nDescription de l'aliment d'origine: ", element.origin_description,
 					"\nNom du substitut:  ", element.name,
-					"\nCatégorie d'aliment: ", element.cat,
+					"\nCatégorie du substitut: ", element.cat,
+					"\nNutriscore du subsitut: ", element.nutriscore,
+					"\nDescription du substitut: ", element.descriptions,
 					"\nMagasin où l'acheter: ", element.market,
-					"\nNutriscore: ", element.nutriscore,
-					"\nDescription du produit: ", element.descriptions,
 					"\nInformations complémentaires sur: ", ("https://fr.openfoodfacts.org/produit/{}".format(element.url_id))
 					)
 
@@ -265,7 +273,7 @@ def action_hided_command(cursor, connection, session):
 	""" Allowed user to input a MySQL command and execute it.
 	Displayed MySQL response.
 
-	 Arguments:
+	 Args:
 	 cursor: class 'pymysql.cursors.DictCursor'
 	 connection: class 'pymysql.connections.Connection'
 	 session: class 'Checkpoint.Checkpoint'

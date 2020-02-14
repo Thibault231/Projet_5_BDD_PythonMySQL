@@ -97,40 +97,28 @@ class SessionLists():
 		 Example:
 		 	self.history_request(cursor, v_len_history="")
 		 """
-		sql = "SELECT Food.name, Food.nutriscore, Food.descriptions, Category.cat_name,\
-		History.date_request, Food.id, Food.market, Food.url_id\
-	    FROM History \
-	    INNER JOIN Food ON (Food.id = History.fk_subst_id)\
-	    INNER JOIN Category ON Category.id = Food.fk_category_id \
-	    ORDER BY History.date_request, Food.id\
+		sql = "SELECT s1.name, s1.nutriscore, s1.descriptions, s1.id, s1.market, s1.url_id,\
+		History.date_request, f1.name, f1.nutriscore, f1.descriptions, Category.cat_name\
+		FROM History \
+		INNER JOIN Food as f1 ON f1.id <=> History.fk_origin_id\
+		INNER JOIN Food as s1 ON s1.id <=> History.fk_subst_id\
+		INNER JOIN Category ON Category.id <=> s1.fk_category_id\
+		ORDER BY History.date_request, s1.id\
 	    %s;"%v_len_history
 		cursor.execute(sql)
-		subst_list = []
+		
 		for element in cursor:
-			subst_list.append([element['date_request'], element['name'], element['cat_name'],
-			element['market'], element['nutriscore'], element['descriptions']])
-
-		sq2 = "SELECT Food.name, Food.nutriscore, Food.descriptions\
-		FROM History \
-		INNER JOIN Food ON (Food.id = History.fk_origin_id), History.date_request, Food.id\
-		ORDER BY History.date_request, Food.id\
-		%s;"%v_len_history
-		cursor.execute(sq2)
-		origin_list = []
-		for element in cursor:
-			origin_list.append([element['name'], element['nutriscore'], element['descriptions']])
-			
-		for rank in range(len(subst_list)):
+			print(element)
 			history_item = Substitute()
-			history_item.date_request = subst_list[rank-1][0]
-			history_item.name =  subst_list[rank-1][1]
-			history_item.cat =  subst_list[rank-1][2]
-			history_item.market =  subst_list[rank-1][3]
-			history_item.nutriscore =  subst_list[rank-1][4]
-			history_item.descriptions =  subst_list[rank-1][5]
-			history_item.origin_name = origin_list[rank-1][0]
-			history_item.origin_nutriscore  = origin_list[rank-1][1]
-			history_item.origin_description = origin_list[rank-1][2]
+			history_item.date_request = element['date_request']
+			history_item.name =  element['name']
+			history_item.cat =  element['cat_name']
+			history_item.market =  element['market']
+			history_item.nutriscore =  element['nutriscore']
+			history_item.descriptions = element['descriptions']
+			history_item.origin_name = element['f1.name']
+			history_item.origin_nutriscore  = element['f1.nutriscore']
+			history_item.origin_description = element['f1.descriptions']
 			self.history.append(history_item)
 
 

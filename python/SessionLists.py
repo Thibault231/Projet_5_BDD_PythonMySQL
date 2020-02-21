@@ -34,12 +34,19 @@ class SessionLists():
 
     def __init__(self):
         self.cat_impl = [
-            'abats', 'taboules-aux-legumes', 'margarines',
-            'compotes-pommes-nature', 'sauces-tomates-au-basilic',
-            'yaourts-natures', 'brioches-tranchees',
-            'cereales-pour-petit-dejeuner', 'galettes-de-riz-souffle',
-            'pestos-au-basilic', 'citrons', 'biscuits-au-chocolat',
-            'chocolats-noirs-sales', 'pates-a-pizza', 'jus-d-orange']
+            [
+                'acras', 'endives-au-jambon', 'cassoulets',
+                'pains-aux-raisins', 'brioches-tranchees',
+                'croissants-fourres', 'yaourts-natures',
+                'laits-concentres', 'milkfat',
+                'sauces-tomates-au-basilic', 'aiolis', 'guacamoles',
+                'pizzas-au-chorizo', 'pizzas-chevre-lardons',
+                'chocolats-noirs-sales', 'pates-a-pizza', 'jus-d-orange'],
+            [
+                'Plats préparés', 'Viennoiseries', 'Produits laitiers',
+                'Sauces', 'Pizzas'
+                ]
+                ]
         self.food = []
         self.food_index = []
         self.cat = []
@@ -83,8 +90,11 @@ class SessionLists():
         Example:
         self.food_list_request(cursor, v_cat_id)
         """
-        sql = "SELECT name, id FROM Food\
-        WHERE fk_category_id = %s ;"
+        sql = "SELECT food.name, food.id\
+        FROM Food\
+        INNER JOIN Category_Food AS cf ON cf.fk_id_food <=> food.id\
+        INNER JOIN Category ON Category.id <=> cf.fk_id_category\
+        WHERE Category.id = %s;"
         cursor.execute(sql, v_cat_id)
         for element in cursor:
             self.food.append((element['name'], element['id']))
@@ -111,7 +121,7 @@ class SessionLists():
         FROM History\
         INNER JOIN Food as f1 ON f1.id <=> History.fk_origin_id\
         INNER JOIN Food as s1 ON s1.id <=> History.fk_subst_id\
-        INNER JOIN Category ON Category.id <=> s1.fk_category_id\
+        INNER JOIN Category ON Category.id <=> History.fk_category_id\
         ORDER BY History.date_request, s1.id %s;" % v_len_history
         cursor.execute(sql)
 

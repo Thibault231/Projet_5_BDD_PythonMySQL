@@ -13,48 +13,65 @@ CREATE TABLE Food (
   descriptions TEXT DEFAULT NULL,
   from_market varchar(200) DEFAULT NULL,
   url_id varchar(20) DEFAULT NULL,
-  fk_category_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
--- create tables
 CREATE TABLE Category (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   cat_name VARCHAR(50) NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE Category_Food (
+  fk_id_category INT UNSIGNED NOT NULL,
+  fk_id_food INT UNSIGNED NOT NULL,
+  PRIMARY KEY (fk_id_category, fk_id_food )
+) ENGINE=InnoDB;
 
-CREATE TABLE SavedSubstitutes (
+CREATE TABLE History (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  substitute_id INT UNSIGNED NOT NULL,
+  fk_subst_id INT UNSIGNED NOT NULL,
+  fk_category_id INT UNSIGNED NOT NULL,
   fk_food_id INT UNSIGNED NOT NULL,
   date_request DATETIME DEFAULT NOW(),
-  PRIMARY KEY (saved_id)
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
 -- create indexs
 CREATE INDEX index_cat_name_nutri
-ON Food (fk_category_id, nutriscore, food_name, id);
+ON Food (nutriscore, food_name, id);
 
 -- create foreignkeys
-ALTER TABLE SavedSubstitutes
+ALTER TABLE History
 ADD FOREIGN KEY (fk_food_id) REFERENCES Food(id)
-ON DELETE SET NULL   
+ON DELETE CASCADE 
 ON UPDATE CASCADE; 
 
-ALTER TABLE SavedSubstitutes
-ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)
-ON DELETE SET NULL   
+ALTER TABLE History
+ADD FOREIGN KEY (fk_subst_id) REFERENCES Food(id)
+ON DELETE CASCADE 
 ON UPDATE CASCADE;
 
-ALTER TABLE Food
+ALTER TABLE History
 ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)
-ON DELETE SET NULL   
+ON DELETE CASCADE  
 ON UPDATE CASCADE;
 
--- show tables and index structures
+ALTER TABLE Category_food
+ADD FOREIGN KEY (fk_id_category) REFERENCES Category(id)
+ON DELETE CASCADE 
+ON UPDATE CASCADE;
+
+ALTER TABLE Category_food
+ADD FOREIGN KEY (fk_id_food) REFERENCES Food(id)
+ON DELETE CASCADE 
+ON UPDATE CASCADE;
+
+-- show database structure
 DESCRIBE category;
 DESCRIBE Food;
-DESCRIBE SavedSubstitutes; 
+DESCRIBE Category_Food;
+DESCRIBE History; 
 SHOW INDEX FROM Food;
+SELECT COUNT(*) FROM Food;
+SELECT * FROM Category_Food;

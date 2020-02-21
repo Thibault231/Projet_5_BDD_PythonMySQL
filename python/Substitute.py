@@ -1,5 +1,6 @@
 # coding: utf-8
 from .food import Food
+
 """ Rule the class 'substitute.Substitute' """
 
 
@@ -50,9 +51,12 @@ class Substitute(Food):
         """
         sql = "SELECT *\
         FROM Food\
-        WHERE fk_category_id= %(cat_id)s AND id!= %(id)s \
+        INNER JOIN Category_Food AS cf ON cf.fk_id_food <=> food.id\
+        INNER JOIN Category ON Category.id <=> cf.fk_id_category\
+        WHERE Category.id= %(cat_id)s AND Food.id!= %(id)s \
         ORDER BY nutriscore\
         LIMIT 1;"
+
         variables = {"cat_id": v_cat_id, "id": v_id}
         cursor.execute(sql, variables)
         for element in cursor:

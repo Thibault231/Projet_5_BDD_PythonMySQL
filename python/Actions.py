@@ -82,17 +82,16 @@ def action_pick_categorie(
 
     while not session.pick_cat:
         session_list.cat_list_request(cursor)
-        print(
-            "\nSelectionnez une des categories suivantes\
-            par son numero d'index\n")
-        print("index:  Q", "  pour QUITTER")
-
+        
         for index, element in enumerate(session_list.cat):
             print(
                 "index: ", index+1, " pour la categorie :  ",
                 element[0].upper())
             session_list.cat_index.append(str(index+1))
-
+        print(
+            "\nSelectionnez une des categories ci-dessus\n\
+                par son numero d'index\n")
+        print("index:  Q", "  pour QUITTER")
         cat_select = input("Categorie selectionnee n°= ")
 
         if cat_select.lower() == 'q':
@@ -142,9 +141,6 @@ def action_pick_food(
     """
     while not session.pick_food:
         session_list.food_list_request(cursor, food_item.cat_id)
-        print("\nVeuillez selectionner un des aliments suivant avec\
-            son numero d'index.")
-        print("index:  Q", "  pour QUITTER")
 
         for index, element in enumerate(session_list.food):
             print(
@@ -152,6 +148,10 @@ def action_pick_food(
                 element[0].upper())
             session_list.food_index.append(str(index+1))
 
+        print(
+            "\nVeuillez selectionner un des aliments ci-dessus\n\
+            par son numero d'index.")
+        print("index:  Q", "  pour QUITTER")
         food_select = input("Aliment selectionne n°= ")
 
         if food_select.lower() == 'q':
@@ -160,9 +160,11 @@ def action_pick_food(
             session.save = True
 
         elif food_select in session_list.food_index:
-            food_item.food_item_request(
-                cursor, food_item.cat, food_item.cat_id)
+            food_item.id = session_list.food[int(food_select) - 1][1]
+            food_item.name = session_list.food[int(food_select) - 1][0]
+            food_item.food_item_request(cursor)
             session.pick_food = True
+            print(food_item.__dict__)
             subst_item.substitute_request(
                 cursor, food_item.cat, food_item.cat_id, food_item.id)
 
@@ -256,9 +258,11 @@ def action_history(cursor, connection, session, session_list):
     """
     while not session.history:
         len_history = input(
-            "Voulez vous afficher:\n    \
-            Toutes les anciennes recherches : 'T'\n    La dernière recherche :\
-            'D'\n    Quitter : 'Q' \n>>: ")
+            "Voulez vous afficher:\n\
+            Toutes les anciennes recherches :   'T'\n\
+            La dernière recherche :             'D'\n\
+            Quitter :                           'Q' \n\
+            >>: ")
         if len_history.lower() == 'd':
             session_list.history_request(cursor, 'LIMIT 1')
             session.history = True

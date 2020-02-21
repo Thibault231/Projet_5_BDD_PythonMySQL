@@ -1,5 +1,5 @@
 #coding: utf-8
-import pymysql.cursors 
+import pymysql.cursors
 from python.food import Food
 from python.substitute import Substitute
 from python.checkpoint import Checkpoint

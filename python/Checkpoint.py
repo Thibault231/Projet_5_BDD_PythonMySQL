@@ -1,7 +1,6 @@
 # coding: utf-8
 import requests
 from .food import Food
-
 """ Rule the class 'checkpoint.Checkpoint' """
 
 
@@ -49,7 +48,7 @@ class Checkpoint():
         self.save = False
         self.history = False
 
-    def _api_extraction(self, categorie, cat_id):
+    def _api_extraction(self, categorie, cat_id, super_cat_list):
         """
         Return a list of class food.Food objects implemented with cat_id and
         an API from OpenfoodFacts. Datas are taken from the page "categorie".
@@ -71,7 +70,7 @@ class Checkpoint():
             format(categorie))
         file = r.json()
         food_list = []
-
+        x = 1
         for element in file['products']:
             if ('ingredients_text_fr' in element)\
                     and len(element['ingredients_text_fr']) > 5:
@@ -82,11 +81,16 @@ class Checkpoint():
                         food_item.name = (element['product_name'])
                         food_item.nutriscore = (
                             element['nutriscore_grade'].upper())
-                        food_item.cat = categorie
+                        food_item.cat.append(categorie)
                         food_item.cat_id = cat_id
                         food_item.descriptions = (
                             element['ingredients_text_fr'])
                         food_item.market = (element['stores'])
+
+                        for cat_item in super_cat_list:
+                            if cat_item in element['categories'].split(','):
+                                food_item.cat.append(cat_item)
+
                         food_list.append(food_item)
         return food_list
 
@@ -145,19 +149,32 @@ class Checkpoint():
         """
 
         variables = {
-            "v_cat": v_cat, "v_name": v_name, "v_nutriscore": v_nutriscore,
+            "v_name": v_name, "v_nutriscore": v_nutriscore,
             "v_descriptions": v_descriptions, "v_market": v_market,
             "v_url_id": v_url_id}
 
-        sql = "INSERT INTO Food (name, nutriscore, descriptions, market, url_id,\
-            fk_category_id)\
-        SELECT %(v_name)s, %(v_nutriscore)s, %(v_descriptions)s, %(v_market)s,\
-            %(v_url_id)s, Category.id\
-        FROM Category\
-        WHERE Category.cat_name <=> %(v_cat)s\
-        LIMIT 1;"
+        sql = "INSERT INTO Food (name, nutriscore, descriptions,\
+        market, url_id)\
+        VALUES (%(v_name)s, %(v_nutriscore)s, %(v_descriptions)s,\
+        %(v_market)s, %(v_url_id)s);"
         cursor.execute(sql, variables)
         connection.commit()
+
+        sql = "SELECT LAST_INSERT_ID() FROM Food;"
+        cursor.execute(sql)
+
+        for row in cursor:
+            for element in v_cat:
+                variables = {
+                    "v_cat_name": element,
+                    "v_food_id": row.get('LAST_INSERT_ID()')}
+                sql = "INSERT INTO Category_Food ( fk_id_food, fk_id_category)\
+                SELECT %(v_food_id)s, Category.id\
+                FROM Category\
+                WHERE Category.cat_name <=> %(v_cat_name)s;"
+                cursor.execute(sql, variables)
+                connection.commit()
+
         return True
 
     def ask_for_db(self, cursor, db):
@@ -259,7 +276,6 @@ class Checkpoint():
         descriptions TEXT DEFAULT NULL,\
         market VARCHAR(200) DEFAULT NULL,\
         url_id VARCHAR(20) DEFAULT NULL,\
-        fk_category_id INT UNSIGNED NOT NULL,\
         PRIMARY KEY (id)\
         ) ENGINE=InnoDB;"
 
@@ -269,7 +285,13 @@ class Checkpoint():
         PRIMARY KEY (id)\
         ) ENGINE=InnoDB;"
 
-        sql5 = "CREATE TABLE History (\
+        sql5 = "CREATE TABLE Category_Food (\
+        fk_id_category INT UNSIGNED NOT NULL,\
+        fk_id_food INT UNSIGNED NOT NULL,\
+        PRIMARY KEY (fk_id_category, fk_id_food )\
+        ) ENGINE=InnoDB;"
+
+        sql6 = "CREATE TABLE History (\
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,\
         fk_origin_id INT UNSIGNED NOT NULL,\
         fk_subst_id INT UNSIGNED NOT NULL,\
@@ -278,26 +300,31 @@ class Checkpoint():
         PRIMARY KEY (id)\
         ) ENGINE=InnoDB;"
 
-        sql6 = "CREATE INDEX index_cat_name_nutri\
-        ON Food (fk_category_id, nutriscore, name, id);"
+        sql7 = "CREATE INDEX index_cat_name_nutri\
+        ON Food (nutriscore, name, id);"
 
-        sql7 = "ALTER TABLE History\
+        sql8 = "ALTER TABLE History\
         ADD FOREIGN KEY (fk_origin_id) REFERENCES Food(id)\
         ON DELETE CASCADE\
         ON UPDATE CASCADE;"
 
-        sql8 = "ALTER TABLE History\
+        sql9 = "ALTER TABLE History\
         ADD FOREIGN KEY (fk_subst_id) REFERENCES Food(id)\
         ON DELETE CASCADE\
         ON UPDATE CASCADE;"
 
-        sql9 = "ALTER TABLE History\
+        sql10 = "ALTER TABLE History\
         ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)\
         ON DELETE CASCADE\
         ON UPDATE CASCADE;"
 
-        sql10 = "ALTER TABLE Food\
-        ADD FOREIGN KEY (fk_category_id) REFERENCES Category(id)\
+        sql11 = "ALTER TABLE Category_food\
+        ADD FOREIGN KEY (fk_id_category) REFERENCES Category(id)\
+        ON DELETE CASCADE\
+        ON UPDATE CASCADE;"
+
+        sql12 = "ALTER TABLE Category_food\
+        ADD FOREIGN KEY (fk_id_food) REFERENCES Food(id)\
         ON DELETE CASCADE\
         ON UPDATE CASCADE;"
 
@@ -312,6 +339,8 @@ class Checkpoint():
         cursor.execute(sql8)
         cursor.execute(sql9)
         cursor.execute(sql10)
+        cursor.execute(sql11)
+        cursor.execute(sql12)
         connection.commit()
 
         self.dtb_create = True
@@ -336,9 +365,12 @@ class Checkpoint():
         Example:
         self.db_implementation(self, cursor, connection, cat_list)
         """
-        for element in cat_list:
+        for element in cat_list[1]:
             cat_id = self._implement_cat(cursor, connection, element)
-            food_list = self._api_extraction(element, cat_id)
+        for element in cat_list[0]:
+            cat_id = self._implement_cat(cursor, connection, element)
+            food_list = self._api_extraction(element, cat_id, cat_list[1])
+
             for element in food_list:
                 self._implement_food(
                     cursor, connection, element.cat, element.name,

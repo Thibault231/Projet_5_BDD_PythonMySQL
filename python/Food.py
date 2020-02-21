@@ -1,5 +1,4 @@
 # coding: utf-8
-
 """ Rule the class 'food.Food' """
 
 
@@ -22,14 +21,14 @@ class Food():
     def __init__(self):
         self.id = "none"
         self.name = "none"
-        self.cat = "none"
+        self.cat = []
         self.cat_id = "none"
         self.market = "none"
         self.descriptions = "none"
         self.nutriscore = "none"
         self.url_id = "none"
 
-    def food_item_request(self, cursor, v_cat, v_cat_id):
+    def food_item_request(self, cursor):
         """ Implement all Food object's attributs with a picking
         row of the table Food in Pur_Beurre database.
 
@@ -47,17 +46,10 @@ class Food():
         self.food_item_request(cursor,v_cat, v_cat_id)
         """
         sql = "SELECT * FROM Food \
-        WHERE fk_category_id = %s ;"
-        cursor.execute(sql, v_cat_id)
-        sql = "SELECT * FROM Food \
-        WHERE fk_category_id = %s ;"
-        cursor.execute(sql, v_cat_id)
+        WHERE food.id = %s ;"
+        cursor.execute(sql, self.id)
         for element in cursor:
-            self.id = (element['id'])
-            self.name = (element['name'])
             self.nutriscore = (element['nutriscore'].upper())
-            self.cat = v_cat
-            self.cat_id = v_cat_id
             self.descriptions = (element['descriptions'])
             self.market = (element['market'])
             self.url_id = (element['url_id'])

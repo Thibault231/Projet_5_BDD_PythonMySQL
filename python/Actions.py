@@ -55,7 +55,7 @@ def action_db_connection(cursor, connection, session, session_list):
 
 
 def action_pick_categorie(
-        cursor, connection, session, food_item, subst_item, session_list):
+        cursor, session, food_item, subst_item, session_list):
 
     """ Display all distint category of the table Category in Pur_Beurre database.
     Make the user do a choice between them inputing a number.
@@ -82,7 +82,7 @@ def action_pick_categorie(
 
     while not session.pick_cat:
         session_list.cat_list_request(cursor)
-        
+
         for index, element in enumerate(session_list.cat):
             print(
                 "index: ", index+1, " pour la categorie :  ",
@@ -181,7 +181,7 @@ def action_pick_food(
                 "\nDescription du produit: ", subst_item.descriptions,
                 "\nInformations complémentaires sur: ",
                 ("https://fr.openfoodfacts.org/produit/{}".
-                    format(subst_item.url_id)))
+                 format(subst_item.url_id)))
             session.select_subs = True
         else:
             session_list.food = []
@@ -293,6 +293,6 @@ def action_history(cursor, connection, session, session_list):
                 "\nMagasin où l'acheter: ", element.market,
                 "\nInformations complémentaires sur: ",
                 ("https://fr.openfoodfacts.org/produit/{}".
-                    format(element.url_id)))
+                 format(element.url_id)))
 
     return session, session_list

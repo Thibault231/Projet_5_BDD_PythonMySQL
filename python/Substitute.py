@@ -1,7 +1,7 @@
 # coding: utf-8
+""" Rule the class 'substitute.Substitute'
+"""
 from .food import Food
-
-""" Rule the class 'substitute.Substitute' """
 
 
 class Substitute(Food):

@@ -1,4 +1,6 @@
 # coding: utf-8
+"""Start and rule the main program.
+"""
 import pymysql.cursors
 from python.food import Food
 from python.substitute import Substitute

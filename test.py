@@ -12,7 +12,7 @@ def main():
 	session = Checkpoint()
 
 	# Check DB pur_beurre exists. Create it if not
-	connection = pymysql.connect(host='localhost', user= 'root', password= 'Wzk2mpbamy12@', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+	connection = pymysql.connect(host='localhost', user= 'root', password= '', db='sys', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 	with connection.cursor() as cursor:	
 		session, session_list = ac.action_db_connection(cursor, connection, session, session_list )
 		
@@ -29,7 +29,7 @@ def main():
 				subst_item = Substitute()
 
 				# select a category
-				session, food_item, subst_item, session_list = ac.action_pick_categorie(cursor, connection, session, food_item, subst_item, session_list)
+				session, food_item, subst_item, session_list = ac.action_pick_categorie(cursor, session, food_item, subst_item, session_list)
 				
 				#select a food item and display a substitute
 				session, food_item, subst_item, session_list = ac.action_pick_food(cursor, connection, session, food_item, subst_item, session_list)

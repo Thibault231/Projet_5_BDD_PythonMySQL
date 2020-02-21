@@ -1,7 +1,8 @@
 # coding: utf-8
+""" Rule the class 'checkpoint.Checkpoint'
+"""
 import requests
 from .food import Food
-""" Rule the class 'checkpoint.Checkpoint' """
 
 
 class Checkpoint():
@@ -70,7 +71,7 @@ class Checkpoint():
             format(categorie))
         file = r.json()
         food_list = []
-        x = 1
+
         for element in file['products']:
             if ('ingredients_text_fr' in element)\
                     and len(element['ingredients_text_fr']) > 5:
@@ -86,9 +87,9 @@ class Checkpoint():
                         food_item.descriptions = (
                             element['ingredients_text_fr'])
                         food_item.market = (element['stores'])
-
+                        print(element['categories'].split(', '))
                         for cat_item in super_cat_list:
-                            if cat_item in element['categories'].split(','):
+                            if cat_item in element['categories'].split(', '):
                                 food_item.cat.append(cat_item)
 
                         food_list.append(food_item)
@@ -177,7 +178,7 @@ class Checkpoint():
 
         return True
 
-    def ask_for_db(self, cursor, db):
+    def ask_for_db(self, cursor, data_base):
         """
         Ask MySQL for presence of 'db' database.
         Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
@@ -199,7 +200,7 @@ class Checkpoint():
         db_list = []
         for row in cursor:
             db_list.append(row.get("Database"))
-        if db in db_list:
+        if data_base in db_list:
             self.dtb_exist = True
         else:
             self.dtb_exist = False
@@ -222,9 +223,8 @@ class Checkpoint():
         self.select_subs = False
         self.save = False
         self.history = False
-        self.hide_command = False
 
-    def connect_db(self, cursor, db):
+    def connect_db(self, cursor, data_base):
         """
         Focus MySQL on use of 'db' database.
         Turn attribut 'dtb_exist' of 'checkpoint.Checkpoint' object
@@ -241,7 +241,7 @@ class Checkpoint():
         Example:
         self.connect_db(cursor, db)
         """
-        sql = "USE %s;" % db
+        sql = "USE %s;" % data_base
         cursor.execute(sql)
         self.connect_dtb = True
 
@@ -365,11 +365,11 @@ class Checkpoint():
         Example:
         self.db_implementation(self, cursor, connection, cat_list)
         """
-        for element in cat_list[1]:
-            cat_id = self._implement_cat(cursor, connection, element)
-        for element in cat_list[0]:
-            cat_id = self._implement_cat(cursor, connection, element)
-            food_list = self._api_extraction(element, cat_id, cat_list[1])
+        for supcat_item in cat_list[1]:
+            cat_id = self._implement_cat(cursor, connection, supcat_item)
+        for cat_item in cat_list[0]:
+            cat_id = self._implement_cat(cursor, connection, cat_item)
+            food_list = self._api_extraction(cat_item, cat_id, cat_list[1])
 
             for element in food_list:
                 self._implement_food(

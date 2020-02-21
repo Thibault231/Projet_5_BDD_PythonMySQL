@@ -1,7 +1,7 @@
 # coding: utf-8
+""" Rule the class 'sessionlists.SessionLists'
+"""
 from .substitute import Substitute
-
-""" Rule the class 'sessionlists.SessionLists' """
 
 
 class SessionLists():
@@ -15,7 +15,7 @@ class SessionLists():
     'compotes-pommes-nature','sauces-tomates-au-basilic',
     'yaourts-natures','brioches-tranchees','cereales-pour-petit-dejeuner',
     'galettes-de-riz-souffle', 'pestos-au-basilic',
-    'citrons', 'biscuits-au-chocolat', 'chocolats-noirs-sales',
+    'citrons', 'biscuits', 'chocolats-noirs-sales',
     'pates-a-pizza', 'jus-d-orange']
     food: list (= empty)
     food_index: list (= empty)
@@ -38,13 +38,13 @@ class SessionLists():
                 'acras', 'endives-au-jambon', 'cassoulets',
                 'pains-aux-raisins', 'brioches-tranchees',
                 'croissants-fourres', 'yaourts-natures',
-                'laits-concentres', 'milkfat',
+                'laits-concentres', 'milkfat', 'biscuits',
                 'sauces-tomates-au-basilic', 'aiolis', 'guacamoles',
                 'pizzas-au-chorizo', 'pizzas-chevre-lardons',
-                'chocolats-noirs-sales', 'pates-a-pizza', 'jus-d-orange'],
+                'chocolats-noirs-sales', 'jus-d-orange'],
             [
                 'Plats préparés', 'Viennoiseries', 'Produits laitiers',
-                'Sauces', 'Pizzas'
+                'Sauces', 'Pizzas', 'Snacks sucrés'
                 ]
                 ]
         self.food = []

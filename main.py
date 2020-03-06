@@ -22,23 +22,20 @@ def main():
     # Check that DB pur_beurre exists. Create it if not.
     connection = pymysql.connect(
         host='localhost', user=user_id, password=user_password, db='sys',
-        charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+        charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor
+        )
     with connection.cursor() as cursor:
-        print(type(cursor), type(connection))
-
         session, session_list = ac.action_db_connection(
             cursor, connection, session, session_list)
-
         print("Welcome to Pur_Butter program")
 
         # program's main loop
         while session.main_loop:
             actions = input("\n\nQuelle action souhaitez vous effectuer?\n\
             Tapez le numéro d'index de l'action.\n\
-            1= Rechercher un substitut pour un aliment\n\
+            1= Rechercher un substitut pour un aliment\\n\
             2= Voir mes substituts enregistrés.\n\
-            Q= Quitter le programme.\
-            \nChoix de l'action' n°= ")
+            Q= Quitter le programme.\nChoix de l'action' n°= ")
 
             # user start a research for a substitute
             if actions == "1":
@@ -48,20 +45,18 @@ def main():
                 # select a category
                 session, food_item, subst_item,
                 session_list = ac.action_pick_categorie(
-                    cursor, connection, session, food_item,
-                    subst_item, session_list)
+                    cursor, session, food_item, subst_item, session_list)
 
                 # select a food item and display a substitute
                 session, food_item, subst_item,
                 session_list = ac.action_pick_food(
-                    cursor, connection, session,
-                    food_item, subst_item, session_list)
+                    cursor, connection, session, food_item,
+                    subst_item, session_list)
 
                 # user choose to save or not in the datagase
-                session, food_item, subst_item,
-                session_list = ac.action_save(
-                    cursor, connection, session,
-                    food_item, subst_item, session_list)
+                session, food_item, subst_item, session_list = ac.action_save(
+                    cursor, connection, session, food_item, subst_item,
+                    session_list)
 
             # user want to see the old researchs
             elif actions == "2":

@@ -164,7 +164,6 @@ def action_pick_food(
             food_item.name = session_list.food[int(food_select) - 1][0]
             food_item.food_item_request(cursor)
             session.pick_food = True
-            print(food_item.__dict__)
             subst_item.substitute_request(
                 cursor, food_item.cat, food_item.cat_id, food_item.id)
 
